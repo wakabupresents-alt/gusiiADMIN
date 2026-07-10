@@ -3,442 +3,290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUSII NIGHT EXPERIENCE - Admin Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>GUSII NIGHT EXPERIENCE - Brimak Hotel, Utawala | July 18, 2026</title>
+    <meta name="description" content="Book tickets for GUSII NIGHT EXPERIENCE. Premium event at Brimak Hotel. Pay via M-PESA STK Push.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
     </script>
     <style>
-        :root{--forest:#0D5E3A;--gold:#D4AF37;--bg:#FDF6E3;--white:#FFF;--charcoal:#2D2D2D;--border:#E5E0D8;--red:#DC2626;--blue:#2563EB}
+        :root{--forest:#0D5E3A;--forest-dark:#0A4A2E;--gold:#D4AF37;--gold-light:#F5E6C8;--bg-gold:#FDF6E3;--charcoal:#2D2D2D;--cream:#FAF8F5;--white:#FFFFFF;--border:#E5E0D8;--f-heading:'Playfair Display',serif;--f-body:'Inter',sans-serif;--f-mono:'JetBrains Mono',monospace}
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Inter',sans-serif;background:#f5f0e8;color:var(--charcoal);min-height:100vh}
-        #loginScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center}
-        #loginScreen.hidden{display:none}
-        #loginScreen .box{background:white;padding:2.5rem;border-radius:16px;text-align:center;width:90%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
-        #loginScreen h2{font-family:'Playfair Display',serif;color:var(--forest);margin-bottom:0.5rem}
-        #loginScreen input{width:100%;padding:0.8rem;border:2px solid var(--border);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:1rem;text-align:center;letter-spacing:3px;outline:none;margin-bottom:0.8rem}
-        #loginScreen input:focus{border-color:var(--forest)}
-        #loginScreen button{padding:0.8rem 2rem;background:var(--forest);color:white;border:none;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;width:100%}
-        #loginScreen .error{color:var(--red);font-size:0.85rem;display:none;margin-top:0.5rem}
-        #mainApp{display:none}#mainApp.show{display:block}
-        .topbar{background:var(--forest);color:white;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem}
-        .topbar h1{font-family:'Playfair Display',serif;font-size:1.2rem}
-        .topbar button{padding:0.4rem 1rem;border-radius:6px;border:none;cursor:pointer;font-weight:500;font-size:0.8rem}
-        .btn-refresh{background:white;color:var(--forest)}.btn-logout{background:var(--red);color:white}
-        .tabs{display:flex;gap:0.3rem;padding:0.8rem 2rem;background:white;border-bottom:1px solid var(--border);flex-wrap:wrap}
-        .tabs button{padding:0.5rem 1rem;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-weight:500;font-size:0.75rem;transition:0.3s}
-        .tabs button:hover{border-color:var(--forest)}.tabs button.on{background:var(--forest);color:white;border-color:var(--forest)}
-        .main-content{padding:1.5rem;max-width:1400px;margin:0 auto}
-        .panel{display:none}.panel.active{display:block}
-        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0.8rem;margin-bottom:1.5rem}
-        .stat-card{background:white;padding:1rem;border-radius:10px;border-left:4px solid var(--forest);box-shadow:0 2px 10px rgba(0,0,0,0.05)}
-        .stat-card .big{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--forest)}
-        .stat-card .lbl{font-size:0.7rem;color:#666;text-transform:uppercase}
-        .card{background:white;border-radius:10px;overflow:hidden;margin-bottom:1rem;box-shadow:0 2px 10px rgba(0,0,0,0.05)}
-        .card-header{padding:0.8rem 1.2rem;font-weight:600;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-        .table-wrap{overflow-x:auto}
-        table{width:100%;border-collapse:collapse;min-width:800px}
-        th{background:var(--forest);color:white;padding:0.6rem 0.4rem;text-align:left;font-size:0.65rem;font-weight:500;text-transform:uppercase}
-        td{padding:0.4rem;border-bottom:1px solid var(--border);font-size:0.75rem}
-        tr:hover td{background:#fdf6e3}
-        .badge{display:inline-block;padding:0.15rem 0.5rem;border-radius:10px;font-size:0.6rem;font-weight:600}
-        .badge.paid{background:#d1fae5;color:#065f46}.badge.pending{background:#fef3c7;color:#92400e}.badge.entered{background:#dbeafe;color:#1e40af}
-        .actions-cell{display:flex;gap:3px;flex-wrap:wrap}
-        .btn-act{padding:3px 8px;border-radius:4px;border:none;cursor:pointer;font-size:0.6rem;font-weight:600;color:white}
-        .btn-act.view{background:#f59e0b}.btn-act.enter{background:var(--forest)}.btn-act.reset{background:#f97316}.btn-act.delete{background:var(--red)}.btn-act.edit{background:var(--blue)}
-        .search-bar{display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap}
-        .search-bar input,.search-bar select{padding:0.5rem 0.8rem;border:1px solid var(--border);border-radius:6px;font-size:0.85rem;outline:none}
-        .form-group{margin-bottom:0.8rem}.form-group label{display:block;margin-bottom:0.2rem;font-weight:500;font-size:0.8rem;text-transform:uppercase}
-        .form-group input,.form-group select,.form-group textarea{width:100%;padding:0.6rem 0.8rem;border:1px solid var(--border);border-radius:6px;font-size:0.9rem;outline:none;font-family:'Inter',sans-serif}
-        .btn-save{padding:0.6rem 1.5rem;background:var(--forest);color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:0.85rem}
-        .artist-card-admin{background:white;border:1px solid var(--border);border-radius:10px;padding:0.8rem 1rem;display:flex;align-items:center;gap:1rem;margin-bottom:0.4rem}
-        .artist-card-admin img{width:45px;height:45px;border-radius:50%;object-fit:cover;background:#eee}
-        .artist-card-admin .artist-info{flex:1}.artist-card-admin .artist-name{font-weight:600;color:var(--forest)}.artist-card-admin .artist-role{font-size:0.7rem;color:#666}
-        .gate-box{text-align:center;padding:2rem}.gate-box input{font-family:'JetBrains Mono',monospace;font-size:1.2rem;text-align:center;letter-spacing:3px;padding:0.8rem;border:2px solid var(--border);border-radius:8px;width:350px;max-width:90%;outline:none}
-        .result-box{margin-top:1rem;padding:1.5rem;border-radius:12px;display:none;text-align:center}
-        .result-box.show{display:block}.result-box.allow{background:#ecfdf5;border:2px solid #6ee7b7}.result-box.deny{background:#fef2f2;border:2px solid #fca5a5}.result-box.warn{background:#fffbeb;border:2px solid #fcd34d}
-        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center}
-        .modal-overlay.show{display:flex}.modal-box{background:white;border-radius:12px;padding:1.5rem;width:95%;max-width:500px;max-height:85vh;overflow-y:auto;position:relative}
-        .modal-close{position:absolute;top:10px;right:15px;font-size:1.5rem;cursor:pointer;background:none;border:none}
+        body{font-family:var(--f-body);background:var(--bg-gold);color:var(--charcoal);line-height:1.6}
+        a,button{cursor:pointer}
+        nav{position:fixed;top:0;width:100%;z-index:1000;display:flex;justify-content:space-between;align-items:center;padding:1rem 5%;background:rgba(253,246,227,0.98);border-bottom:1px solid var(--border)}
+        .logo{display:flex;align-items:center;gap:0.6rem;text-decoration:none}
+        .logo-icon{width:38px;height:38px;background:var(--forest);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--gold)}
+        .logo-text{font-family:var(--f-heading);font-size:0.9rem;font-weight:700;color:var(--forest);letter-spacing:1px;text-transform:uppercase}
+        .nav-links{display:flex;list-style:none;gap:1.5rem}
+        .nav-links a{text-decoration:none;color:var(--charcoal);font-weight:500;font-size:0.8rem;letter-spacing:1px;text-transform:uppercase;transition:0.3s}
+        .nav-links a:hover,.nav-links a.on{color:var(--forest)}
+        .hamburger{display:none;background:none;border:none;font-size:1.5rem;color:var(--forest);cursor:pointer}
+        .btn-forest{background:var(--forest);color:var(--white);padding:0.6rem 1.5rem;border-radius:6px;border:none;font-weight:600;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;text-decoration:none;display:inline-block;transition:0.3s}
+        .btn-forest:hover{background:var(--forest-dark)}
+        .section{display:none}.section.active{display:block}
+        .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:7rem 2% 3rem;background:linear-gradient(180deg,var(--bg-gold) 0%,var(--cream) 100%)}
+        .hero-inner{max-width:850px;width:100%}
+        .hero-badge{display:inline-block;border:1px solid var(--forest);color:var(--forest);padding:0.4rem 1.2rem;font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;margin:0.2rem;font-weight:500}
+        .hero h1{font-family:var(--f-heading);font-size:4rem;line-height:1.1;margin:0.8rem 0;font-weight:800;color:var(--forest)}
+        .hero h1 .gold-text{color:var(--gold)}
+        .hero .hero-subtitle{font-size:1rem;color:var(--charcoal);margin-bottom:0.3rem;opacity:0.7;letter-spacing:1px}
+        .hero .hero-date{font-size:1.3rem;color:var(--forest);font-family:var(--f-heading);font-weight:600;margin:0.5rem 0}
+        .btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin:1.5rem 0}
+        .btn{padding:0.9rem 2rem;border-radius:6px;font-weight:600;font-size:0.8rem;letter-spacing:1px;text-transform:uppercase;text-decoration:none;display:inline-flex;align-items:center;gap:0.4rem;border:none;transition:0.3s}
+        .btn-primary{background:var(--forest);color:var(--white)}.btn-primary:hover{background:var(--forest-dark)}
+        .btn-outline{border:2px solid var(--forest);color:var(--forest);background:transparent}.btn-outline:hover{background:var(--forest);color:var(--white)}
+        .countdown-container{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.5rem;max-width:550px;margin:1.5rem auto;box-shadow:0 5px 20px rgba(0,0,0,0.05)}
+        .countdown-label{font-family:var(--f-heading);color:var(--forest);font-size:0.9rem;letter-spacing:2px;margin-bottom:0.8rem;text-transform:uppercase}
+        .countdown{display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap}
+        .cd-item{background:var(--bg-gold);border:2px solid var(--border);padding:0.8rem 1rem;border-radius:8px;text-align:center;min-width:70px}
+        .cd-item span{display:block;font-family:var(--f-heading);font-size:1.8rem;font-weight:700;color:var(--forest)}.cd-item small{font-size:0.55rem;letter-spacing:2px;color:var(--charcoal);opacity:0.6;text-transform:uppercase}
+        .section-title{text-align:center;margin:2rem 0 1rem}.section-title h2{font-family:var(--f-heading);font-size:2.2rem;color:var(--forest);font-weight:700}
+        .section-title .divider{width:50px;height:2px;background:var(--gold);margin:0.5rem auto}
+        .pricing{display:grid;grid-template-columns:repeat(2,1fr);gap:1.2rem;max-width:650px;margin:0 auto 2rem;padding:0 1%}
+        .pcard{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:2rem 1.5rem;text-align:center;transition:0.3s;cursor:pointer;box-shadow:0 3px 15px rgba(0,0,0,0.04);position:relative;overflow:hidden}
+        .pcard:hover{transform:translateY(-5px);box-shadow:0 15px 40px rgba(0,0,0,0.1);border-color:var(--forest)}
+        .pcard.selected{border:2px solid var(--forest)!important;background:var(--cream)!important}
+        .pcard.premium::after{content:'BEST VALUE';position:absolute;top:12px;right:-28px;background:var(--gold);color:var(--white);padding:0.15rem 2rem;font-size:0.5rem;font-weight:700;letter-spacing:2px;transform:rotate(45deg)}
+        .pcard .ticket-icon{font-size:2.5rem;margin-bottom:0.3rem}
+        .pcard h3{font-family:var(--f-heading);font-size:1.2rem;color:var(--forest)}
+        .pcard .price{font-family:var(--f-heading);font-size:2.5rem;font-weight:800;color:var(--gold);margin:0.3rem 0}
+        .pcard ul{list-style:none;text-align:left;margin:0.8rem 0;font-size:0.8rem}
+        .pcard ul li{padding:0.2rem 0;color:var(--charcoal)}.pcard ul li::before{content:'✓ ';color:var(--forest);font-weight:700}
+        .pcard .btn-pick{width:100%;padding:0.7rem;border:2px solid var(--forest);border-radius:6px;font-weight:600;font-size:0.8rem;cursor:pointer;background:transparent;color:var(--forest);letter-spacing:1px;text-transform:uppercase;transition:0.3s}
+        .pcard .btn-pick:hover{background:var(--forest);color:var(--white)}
+        .form-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:2rem;margin:0 auto 2rem;max-width:500px;box-shadow:0 5px 20px rgba(0,0,0,0.05)}
+        .form-title{font-family:var(--f-heading);text-align:center;margin-bottom:1.2rem;color:var(--forest);font-size:1.3rem;letter-spacing:1px}
+        .f-group{margin-bottom:0.8rem}.f-group label{display:block;margin-bottom:0.2rem;font-weight:500;font-size:0.75rem;color:var(--charcoal);text-transform:uppercase;letter-spacing:1px}
+        .f-group input,.f-group select{width:100%;padding:0.7rem 0.9rem;border:1px solid var(--border);border-radius:6px;font-size:0.9rem;background:var(--bg-gold);outline:none;font-family:var(--f-body);transition:0.3s}
+        .f-group input:focus,.f-group select:focus{border-color:var(--forest)}
+        .sum-box{background:var(--bg-gold);border:1px solid var(--border);border-radius:8px;padding:0.8rem;margin-bottom:0.8rem}
+        .s-row{display:flex;justify-content:space-between;padding:0.15rem 0;font-size:0.8rem}
+        .s-row.bold{border-top:1px solid var(--border);margin-top:0.2rem;padding-top:0.4rem;font-weight:700;color:var(--forest);font-size:1.1rem;font-family:var(--f-heading)}
+        .btn-pay{width:100%;padding:0.9rem;background:var(--forest);color:var(--white);border:none;border-radius:6px;font-weight:600;font-size:0.9rem;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:0.3s}
+        .btn-pay:hover{background:var(--forest-dark)}.btn-pay:disabled{background:#ccc;cursor:not-allowed}
+        .btn-wa-pay{width:100%;padding:0.8rem;background:transparent;color:#25D366;border:1px solid #25D366;border-radius:6px;font-weight:500;font-size:0.85rem;cursor:pointer;margin-top:0.4rem;transition:0.3s}
+        .btn-wa-pay:hover{background:#25D366;color:white}
+        .btn-retry{width:100%;padding:0.7rem;background:transparent;color:var(--forest);border:1px solid var(--forest);border-radius:6px;font-weight:500;cursor:pointer;margin-top:0.3rem;transition:0.3s}
+        .btn-retry:hover{background:var(--forest);color:white}
+        .msg-box{display:none;padding:0.8rem;border-radius:8px;margin-top:0.8rem;text-align:center;font-size:0.85rem}
+        .msg-box.show{display:block}.msg-box.ok{background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46}.msg-box.err{background:#fef2f2;border:1px solid #fca5a5;color:#991b1b}.msg-box.info{background:#eff6ff;border:1px solid #93c5fd;color:#1e40af}.msg-box.warn{background:#fffbeb;border:1px solid #fcd34d;color:#92400e}
+        .ref{font-family:var(--f-mono);font-size:0.85rem;font-weight:600;color:var(--forest);word-break:break-all}
+        .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin2 0.7s linear infinite;vertical-align:middle;margin-right:6px}
+        @keyframes spin2{to{transform:rotate(360deg)}}
+        .hidden{display:none!important}
+        .pochi-box{background:var(--bg-gold);border:1px solid var(--gold);color:var(--charcoal);padding:0.8rem;border-radius:8px;text-align:center;margin:0.8rem 0;font-size:0.8rem}
+        .pochi-box .pochi-number{font-family:var(--f-mono);font-size:1.2rem;color:var(--forest);letter-spacing:2px;display:block;margin-top:0.2rem;font-weight:700}
+        .artists-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;max-width:1000px;margin:0 auto;padding:0 1rem}
+        .artist-card{background:var(--white);border:1px solid var(--border);padding:1.2rem 0.8rem;border-radius:12px;text-align:center;transition:0.3s}
+        .artist-card:hover{transform:translateY(-5px);box-shadow:0 15px 40px rgba(0,0,0,0.1);border-color:var(--forest)}
+        .artist-photo{width:70px;height:70px;border-radius:50%;object-fit:cover;margin:0 auto 0.5rem;border:3px solid var(--gold);background:var(--bg-gold);display:block}
+        .artist-photo-placeholder{width:70px;height:70px;border-radius:50%;margin:0 auto 0.5rem;border:3px solid var(--gold);background:var(--forest);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--gold)}
+        .artist-card h3{font-family:var(--f-heading);font-size:0.85rem;color:var(--forest);letter-spacing:1px;margin-bottom:0.2rem}
+        .artist-card .role{font-size:0.65rem;color:var(--charcoal);opacity:0.6;text-transform:uppercase;letter-spacing:1px}
+        .artist-section{margin-bottom:2.5rem}.artist-section h3{font-family:var(--f-heading);color:var(--gold);text-align:center;font-size:1.1rem;letter-spacing:2px;margin-bottom:1rem;text-transform:uppercase}
+        .artist-section .divider{width:40px;height:1px;background:var(--gold);margin:0.5rem auto 1rem}
+        .page-top{padding:7rem 1.5rem 1.5rem;text-align:center}.page-top h2{font-family:var(--f-heading);font-size:2.2rem;color:var(--forest)}
+        .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.8rem;max-width:800px;margin:0 auto;padding:0 1rem}
+        .info-card{background:var(--white);border:1px solid var(--border);padding:1.2rem;border-radius:10px;text-align:center;transition:0.3s}
+        .info-card:hover{border-color:var(--forest)}.info-card .info-icon{font-size:1.8rem;margin-bottom:0.3rem}
+        .info-card h3{font-family:var(--f-heading);color:var(--forest);font-size:0.9rem}
+        .info-card p{color:var(--charcoal);opacity:0.7;font-size:0.75rem;margin-top:0.2rem}
+        .contact-card{max-width:450px;margin:1.5rem auto;background:var(--white);border:1px solid var(--border);padding:2rem;border-radius:12px;text-align:center}
+        .contact-card .contact-icon{font-size:2.5rem;margin-bottom:0.5rem}
+        .contact-card h3{font-family:var(--f-heading);color:var(--forest);font-size:1.1rem}
+        .contact-card .contact-phone{font-family:var(--f-mono);font-size:1.3rem;color:var(--charcoal);margin:0.3rem 0}
         .ticket-display{background:var(--white);border:2px solid var(--forest);border-radius:14px;padding:1.2rem;margin:0.8rem 0;text-align:center}
         .ticket-display .ticket-header{border-bottom:1px solid var(--border);padding-bottom:0.8rem;margin-bottom:0.8rem}
-        .ticket-display .ticket-header h2{font-family:'Playfair Display',serif;color:var(--forest);font-size:1.2rem}
+        .ticket-display .ticket-header h2{font-family:var(--f-heading);color:var(--forest);font-size:1.2rem}
         .btn-download{display:inline-block;background:var(--forest);color:var(--white);padding:0.6rem 1.3rem;border-radius:6px;font-weight:600;cursor:pointer;margin:0.4rem;border:none;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;transition:0.3s}
-        .btn-download:hover{background:#0A4A2E}
-        .status-msg{padding:0.5rem;border-radius:6px;margin-top:0.5rem;font-size:0.85rem;text-align:center}
-        .status-msg.success{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7}
-        .status-msg.error{background:#fef2f2;color:#991b1b;border:1px solid #fca5a5}
-        .status-msg.info{background:#eff6ff;color:#1e40af;border:1px solid #93c5fd}
-        @media(max-width:768px){.tabs button{font-size:0.65rem;padding:0.4rem 0.6rem}.main-content{padding:0.8rem}}
+        .btn-download:hover{background:var(--forest-dark)}
+        footer{text-align:center;padding:1.2rem;background:var(--forest);color:var(--white);font-size:0.7rem;letter-spacing:1px}
+        .dev-section{text-align:center;padding:1rem;background:var(--white);border-top:1px solid var(--border);font-size:0.75rem;color:var(--charcoal)}
+        .dev-section .wa-btn{display:inline-flex;align-items:center;gap:0.3rem;background:#25D366;color:white!important;padding:0.4rem 1rem;border-radius:6px;text-decoration:none;font-weight:500;font-size:0.7rem;margin:0.2rem;transition:0.3s}
+        .dev-section .wa-btn:hover{transform:translateY(-2px)}
+        .payment-status{font-size:0.8rem;padding:0.3rem;border-radius:4px;margin:0.2rem 0}
+        .payment-status.pending{color:#92400e;background:#fffbeb}
+        .payment-status.success{color:#065f46;background:#ecfdf5}
+        .payment-status.failed{color:#991b1b;background:#fef2f2}
+        @media(max-width:768px){.hero h1{font-size:2.2rem}.pricing{grid-template-columns:1fr}.artists-grid{grid-template-columns:repeat(2,1fr)}.hamburger{display:block}.nav-links{display:none;position:absolute;top:100%;left:0;width:100%;background:var(--bg-gold);flex-direction:column;padding:1rem;border-bottom:1px solid var(--border)}.nav-links.open{display:flex}.nav-links a{padding:0.8rem 0;border-bottom:1px solid var(--border)}}
     </style>
 </head>
 <body>
-    <div id="loginScreen"><div class="box"><h2>🎵 GUSII NIGHT</h2><p>Admin Dashboard</p><input type="password" id="adminPassword" placeholder="Password"><button id="loginBtn">🔐 Login</button><p class="error" id="loginError">Wrong password!</p></div></div>
+    <nav id="navbar">
+        <a href="/" class="logo"><div class="logo-icon">🎵</div><span class="logo-text">GUSII NIGHT</span></a>
+        <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+        <ul class="nav-links" id="navLinks">
+            <li><a class="nav-link on" data-page="home">Home</a></li>
+            <li><a class="nav-link" data-page="book">Book</a></li>
+            <li><a class="nav-link" data-page="artists">Artists</a></li>
+            <li><a class="nav-link" data-page="info">Info</a></li>
+            <li><a class="nav-link" data-page="contact">Contact</a></li>
+        </ul>
+        <a class="btn-forest" id="navGetTickets">Get Tickets</a>
+    </nav>
 
-    <div id="mainApp">
-        <div class="topbar"><h1>🎵 GUSII NIGHT ADMIN</h1><div><button class="btn-refresh" id="refreshBtn">🔄 Refresh</button><button class="btn-logout" id="logoutBtn">🚪 Logout</button></div></div>
-        <div class="tabs">
-            <button class="on" data-tab="dashboard">📊 Dashboard</button>
-            <button data-tab="bookings">📋 Bookings</button>
-            <button data-tab="artists">🎤 Artists</button>
-            <button data-tab="gate">🚪 Gate</button>
-            <button data-tab="add">➕ Add</button>
-            <button data-tab="export">📥 Export</button>
+    <!-- HOME -->
+    <section class="section active" id="page-home"><div class="hero"><div class="hero-inner">
+        <div class="hero-badge">🎵 Presented by Wakabu Sounds and Events</div>
+        <h1><span class="gold-text">GUSII</span> NIGHT<br>Experience</h1>
+        <div class="hero-date">July 18, 2026</div>
+        <p class="hero-subtitle">Brimak Hotel, Utawala • Opposite Amani Stage • 18+</p>
+        <div class="btns"><button class="btn btn-primary" id="homeGetTickets">🎫 Get Tickets</button><a href="https://wa.me/254794346184" target="_blank" class="btn btn-outline">💬 WhatsApp</a></div>
+        <div class="countdown-container"><div class="countdown-label">Event Starts In</div><div class="countdown" id="countdown"><div class="cd-item"><span id="cd-d">00</span><small>Days</small></div><div class="cd-item"><span id="cd-h">00</span><small>Hours</small></div><div class="cd-item"><span id="cd-m">00</span><small>Minutes</small></div><div class="cd-item"><span id="cd-s">00</span><small>Seconds</small></div></div></div>
+        <div class="section-title"><h2>Select Your Experience</h2><div class="divider"></div></div>
+        <div class="pricing">
+            <div class="pcard" data-ticket="Regular" data-price="500"><div><div class="ticket-icon">🎫</div><h3>Regular</h3><div class="price">KSH 500</div><ul><li>General Admission</li><li>Main Arena Access</li></ul></div><button class="btn-pick">Select Regular</button></div>
+            <div class="pcard premium" data-ticket="VIP" data-price="1000"><div><div class="ticket-icon">👑</div><h3>VIP</h3><div class="price">KSH 1,000</div><ul><li>Priority Entry</li><li>VIP Section</li><li>Premium Experience</li></ul></div><button class="btn-pick">Select VIP</button></div>
         </div>
-        <div class="main-content">
-            <div class="panel active" id="panel-dashboard">
-                <div class="stats-grid">
-                    <div class="stat-card"><div class="big" id="countTotal">0</div><div class="lbl">Total</div></div>
-                    <div class="stat-card" style="border-left-color:#f59e0b"><div class="big" id="countPending">0</div><div class="lbl">Pending</div></div>
-                    <div class="stat-card" style="border-left-color:#059669"><div class="big" id="countPaid">0</div><div class="lbl">Paid</div></div>
-                    <div class="stat-card" style="border-left-color:#3b82f6"><div class="big" id="countInside">0</div><div class="lbl">Inside</div></div>
-                    <div class="stat-card" style="border-left-color:#8b5cf6"><div class="big" id="countArtists">0</div><div class="lbl">Artists</div></div>
-                    <div class="stat-card" style="border-left-color:#ec4899"><div class="big" id="revenueTotal">KSH 0</div><div class="lbl">Revenue</div></div>
-                </div>
-                <div class="card"><div class="card-header">Recent Bookings</div><div class="table-wrap"><table><thead><tr><th>Ref</th><th>Name</th><th>Phone</th><th>Ticket</th><th>Total</th><th>Status</th></tr></thead><tbody id="recentTable"></tbody></table></div></div>
-            </div>
-            <div class="panel" id="panel-bookings">
-                <div class="search-bar"><input type="text" id="searchInput" placeholder="🔍 Search..."><select id="statusFilter"><option value="all">All</option><option value="pending">Pending</option><option value="paid">Paid</option><option value="entered">Inside</option></select></div>
-                <div class="card"><div class="table-wrap"><table><thead><tr><th>Ref</th><th>Name</th><th>Phone</th><th>Email</th><th>Ticket</th><th>Qty</th><th>Total</th><th>Status</th><th>Entry</th><th>Actions</th></tr></thead><tbody id="bookingsTable"></tbody></table></div></div>
-            </div>
-            <div class="panel" id="panel-artists">
-                <div class="card"><div class="card-header">🎤 Artists <button class="btn-save" id="addArtistBtn" style="font-size:0.7rem;padding:0.3rem 0.8rem">+ Add</button></div>
-                <div style="padding:1rem" id="artistsList"><p style="text-align:center;color:#666">Loading...</p></div></div>
-            </div>
-            <div class="panel" id="panel-gate">
-                <div class="card"><div class="gate-box"><h2>🚪 Gate Entry</h2><input type="text" id="gateInput" placeholder="Scan or type reference..." autocomplete="off"><div class="result-box" id="gateResult"></div><div style="margin-top:1rem"><button class="btn-save" id="gateCameraBtn">📷 Camera</button><button class="btn-save" id="gateUploadBtn" style="background:#8b5cf6">📁 Upload</button><input type="file" id="gateFileInput" accept="image/*" style="display:none"></div><div id="gateCamContainer" style="display:none;margin-top:1rem"><video id="gateVideo" autoplay playsinline style="width:100%;max-width:400px;border-radius:8px;border:2px solid var(--forest);margin:0 auto;display:block"></video><canvas id="gateCanvas" style="display:none"></canvas></div></div></div>
-            </div>
-            <div class="panel" id="panel-add">
-                <div class="card"><div class="card-header">➕ Add Booking</div><div style="padding:1rem;max-width:500px">
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem"><div class="form-group"><label>Name *</label><input type="text" id="addName"></div><div class="form-group"><label>Phone *</label><input type="tel" id="addPhone"></div></div>
-                    <div class="form-group"><label>Email *</label><input type="email" id="addEmail" placeholder="required for ticket delivery"></div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.6rem"><div class="form-group"><label>Ticket</label><select id="addTicket"><option value="Regular">Regular-500</option><option value="VIP">VIP-1000</option></select></div><div class="form-group"><label>Qty</label><input type="number" id="addQty" value="1" min="1" max="20"></div><div class="form-group"><label>Status</label><select id="addStatus"><option value="paid">Paid</option><option value="pending">Pending</option></select></div></div>
-                    <button class="btn-save" id="saveBookingBtn" style="width:100%">✅ Save & Send Ticket</button>
-                    <div id="saveStatus" class="status-msg" style="display:none"></div>
-                </div></div>
-            </div>
-            <div class="panel" id="panel-export">
-                <div class="card"><div class="card-header">📥 Export</div><div style="padding:2rem;text-align:center"><button class="btn-save" id="exportCSVBtn">📊 CSV</button><button class="btn-save" id="exportJSONBtn" style="background:var(--blue);margin-left:0.5rem">📋 JSON</button></div></div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-overlay" id="artistModal"><div class="modal-box"><button class="modal-close" onclick="document.getElementById('artistModal').classList.remove('show')">✕</button><div id="artistModalContent"></div></div></div>
-    <div class="modal-overlay" id="ticketModal"><div class="modal-box"><button class="modal-close" onclick="document.getElementById('ticketModal').classList.remove('show')">✕</button><div id="ticketContent"></div></div></div>
+        <div id="bookingFormSection" style="display:none;max-width:500px;margin:0 auto"><div class="form-card"><h3 class="form-title">Complete Your Booking</h3><form id="bookingForm"><div class="f-group"><label>Full Name *</label><input type="text" id="bName" required placeholder="Enter your full name"></div><div class="f-group"><label>M-PESA Phone Number *</label><input type="tel" id="bPhone" required placeholder="e.g., 0712345678"></div><div class="f-group"><label>Email *</label><input type="email" id="bEmail" required placeholder="For ticket delivery"></div><div class="f-group"><label>Ticket</label><select id="bTicket"><option value="">Select...</option><option value="Regular|500">Regular - KSH 500</option><option value="VIP|1000">VIP - KSH 1,000</option></select></div><div class="f-group"><label>Qty</label><input type="number" id="bQty" min="1" max="20" value="1"></div><div class="sum-box"><div class="s-row bold"><span>Total</span><span id="sumTotal">KSH 0</span></div></div><button type="submit" class="btn-pay" id="payBtn">📱 Pay via M-PESA</button></form><div class="pochi-box">📱 Pochi La Biashara<span class="pochi-number">0794 346 184</span></div><button class="btn-wa-pay" id="waPayBtn">💬 Reserve via WhatsApp</button><div class="msg-box" id="msgBox"></div></div></div>
+    </div></div></section>
+
+    <!-- BOOK PAGE -->
+    <section class="section" id="page-book"><div class="page-top"><h2>Reserve Your Spot</h2></div><div class="form-card"><h3 class="form-title">Ticket Reservation</h3><form id="bookingForm2"><div class="f-group"><label>Full Name *</label><input type="text" id="bName2" required placeholder="Enter your full name"></div><div class="f-group"><label>M-PESA Phone *</label><input type="tel" id="bPhone2" required placeholder="e.g., 0712345678"></div><div class="f-group"><label>Email *</label><input type="email" id="bEmail2" required placeholder="For ticket delivery"></div><div class="f-group"><label>Ticket</label><select id="bTicket2"><option value="">Select...</option><option value="Regular|500">Regular - KSH 500</option><option value="VIP|1000">VIP - KSH 1,000</option></select></div><div class="f-group"><label>Qty</label><input type="number" id="bQty2" min="1" max="20" value="1"></div><div class="sum-box"><div class="s-row bold"><span>Total</span><span id="sumTotal2">KSH 0</span></div></div><button type="submit" class="btn-pay" id="payBtn2">📱 Pay via M-PESA</button></form><div class="pochi-box">📱 Pochi La Biashara<span class="pochi-number">0794 346 184</span></div><button class="btn-wa-pay" id="waPayBtn2">💬 Reserve via WhatsApp</button><div class="msg-box" id="msgBox2"></div></div></section>
+
+    <!-- ARTISTS PAGE -->
+    <section class="section" id="page-artists"><div class="page-top"><h2>Performing Artists</h2></div><div id="artistsContainer" style="max-width:1000px;margin:0 auto;padding:0 1rem"><p style="text-align:center;color:#666">Loading artists...</p></div></section>
+
+    <!-- INFO PAGE -->
+    <section class="section" id="page-info"><div class="page-top"><h2>Event Information</h2></div><div class="info-grid"><div class="info-card"><div class="info-icon">📍</div><h3>Venue</h3><p>Brimak Hotel, Utawala<br>Opposite Amani Stage</p></div><div class="info-card"><div class="info-icon">📅</div><h3>Date</h3><p>July 18, 2026<br>Gates 6:00 PM</p></div><div class="info-card"><div class="info-icon">🔞</div><h3>Age</h3><p>18+ Only<br>ID Required</p></div><div class="info-card"><div class="info-icon">🎫</div><h3>Tickets</h3><p>Regular KSH 500<br>VIP KSH 1,000</p></div><div class="info-card"><div class="info-icon">📱</div><h3>Payment</h3><p>M-PESA STK Push<br>Pochi: 0794 346 184</p></div><div class="info-card"><div class="info-icon">🎵</div><h3>By</h3><p>Wakabu Sounds<br>and Events</p></div></div></section>
+
+    <!-- CONTACT -->
+    <section class="section" id="page-contact"><div class="page-top"><h2>Contact</h2></div><div class="contact-card"><div class="contact-icon">💬</div><h3>WhatsApp Support</h3><p class="contact-phone">0794 346 184</p><a href="https://wa.me/254794346184" target="_blank" class="btn btn-primary" style="display:inline-flex;margin:0.5rem">💬 Chat Now</a><div class="pochi-box" style="margin-top:0.8rem">📱 Pochi La Biashara<span class="pochi-number">0794 346 184</span></div></div></section>
+
+    <footer><p>🎵 GUSII NIGHT EXPERIENCE • July 18, 2026 • Brimak Hotel, Utawala • 📱 0794 346 184</p></footer>
+    <div class="dev-section"><strong>Developed by Felix Nyabuto</strong> | 📞 0716 625 790 <a href="https://wa.me/254716625790" target="_blank" class="wa-btn">💬 Chat Developer</a></div>
 
     <script>
         // ==================== CONFIGURATION ====================
         const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxdWVoZ3dybWJsY2RkYnNvaXdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2NDg1NTksImV4cCI6MjA5OTIyNDU1OX0.IN-IREWqW8GfbsExnROx41bCGnghzwMTClenIiRsSs0';
-        const SB_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxdWVoZ3dybWJsY2RkYnNvaXdiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MzY0ODU1OSwiZXhwIjoyMDk5MjI0NTU5fQ.KUmwCPT8qzyuxbXeD72MkuVr_e3_q8R8islUnmGvEqo';
+        const STKPUSH_URL = 'https://pquehgwrmblcddbsoiwb.supabase.co/functions/v1/stkpush';
+        const PAYMENT_STATUS_URL = 'https://pquehgwrmblcddbsoiwb.supabase.co/functions/v1/payment-status';
         const REST_URL = 'https://pquehgwrmblcddbsoiwb.supabase.co/rest/v1';
         const H = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' };
-        const H_SERVICE = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_SERVICE_KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' };
-        
+
         // EmailJS config
         const EMAILJS_PUBLIC_KEY = 'UkU1y_OuKVG3zYidn';
         const EMAILJS_SERVICE_ID = 'service_31mpkjq';
         const EMAILJS_TEMPLATE_ID = 'template_qhpvew8';
 
         // ==================== INIT EMAILJS ====================
-        emailjs.init({
-            publicKey: EMAILJS_PUBLIC_KEY,
-        });
+        emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 
-        // ==================== STATE ====================
-        let bookings = [],
-            artists = [],
-            gateStream = null;
+        let selName = '', selPrice = 0, currentRef = '', pollTimer = null, isPolling = false, pollTries = 0;
+        const MAX_POLLS = 20, POLL_INTERVAL = 3000;
 
-        // ==================== DOM REFS ====================
-        const loginScreen = document.getElementById('loginScreen');
-        const mainApp = document.getElementById('mainApp');
-        const adminPass = document.getElementById('adminPassword');
-        const loginBtn = document.getElementById('loginBtn');
-        const loginError = document.getElementById('loginError');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const refreshBtn = document.getElementById('refreshBtn');
-
-        // ==================== LOGIN ====================
-        loginBtn.addEventListener('click', async function() {
-            if (adminPass.value === 'gusii2026') {
-                loginScreen.classList.add('hidden');
-                mainApp.classList.add('show');
-                await loadAll();
-            } else {
-                loginError.style.display = 'block';
-            }
-        });
-        adminPass.addEventListener('keypress', e => { if (e.key === 'Enter') loginBtn.click(); });
-        logoutBtn.addEventListener('click', () => {
-            loginScreen.classList.remove('hidden');
-            mainApp.classList.remove('show');
-        });
-        refreshBtn.addEventListener('click', loadAll);
-
-        // ==================== LOAD DATA ====================
-        async function loadAll() {
-            try {
-                const r = await fetch(`${REST_URL}/bookings?select=*&order=created_at.desc`, { headers: H });
-                if (r.ok) {
-                    const d = await r.json();
-                    bookings = Array.isArray(d) ? d.map(b => ({
-                        id: b.id,
-                        ref: b.booking_reference,
-                        name: b.full_name,
-                        phone: b.phone,
-                        email: b.email || 'N/A',
-                        ticket: b.ticket_type,
-                        qty: b.quantity,
-                        total: b.total_amount,
-                        status: b.status || 'pending',
-                        entered: b.gate_entered || false,
-                        gate_time: b.gate_time
-                    })) : [];
-                } else { bookings = []; }
-            } catch (e) { bookings = []; }
+        // ==================== LOAD ARTISTS ====================
+        async function loadArtists() {
+            const container = document.getElementById('artistsContainer');
             try {
                 const r = await fetch(`${REST_URL}/artists?select=*&order=display_order`, { headers: H });
-                if (r.ok) {
-                    const d = await r.json();
-                    artists = Array.isArray(d) ? d : [];
-                } else { artists = []; }
-            } catch (e) { artists = []; }
-            refreshAll();
+                if (!r.ok) { container.innerHTML = '<p style="text-align:center;color:#666">Unable to load artists</p>'; return; }
+                const artists = await r.json();
+                if (!Array.isArray(artists) || artists.length === 0) { container.innerHTML = '<p style="text-align:center;color:#666">No artists announced yet</p>'; return; }
+                const musicPolicy = artists.filter(a => a.category === 'music_policy');
+                const hosts = artists.filter(a => a.category === 'host');
+                const guests = artists.filter(a => a.category === 'guest_artist');
+                let html = '';
+                if (musicPolicy.length > 0) { html += `<div class="artist-section"><h3>Music Policy</h3><div class="divider"></div><div class="artists-grid" style="grid-template-columns:repeat(${Math.min(musicPolicy.length,2)},1fr);max-width:${Math.min(musicPolicy.length*180,400)}px">${musicPolicy.map(a => artistCard(a)).join('')}</div></div>`; }
+                if (hosts.length > 0) { html += `<div class="artist-section"><h3>Host</h3><div class="divider"></div><div class="artists-grid" style="grid-template-columns:1fr;max-width:200px">${hosts.map(a => artistCard(a)).join('')}</div></div>`; }
+                if (guests.length > 0) { html += `<div class="artist-section"><h3>Guest Artists</h3><div class="divider"></div><div class="artists-grid">${guests.map(a => artistCard(a)).join('')}</div></div>`; }
+                container.innerHTML = html;
+            } catch (e) { container.innerHTML = '<p style="text-align:center;color:#666">Error loading artists</p>'; }
         }
 
-        // ==================== REFRESH UI ====================
-        function refreshAll() { refreshDash();
-            renderBookings();
-            renderArtists(); }
-
-        function refreshDash() {
-            document.getElementById('countTotal').textContent = bookings.length;
-            document.getElementById('countPending').textContent = bookings.filter(b => b.status === 'pending').length;
-            document.getElementById('countPaid').textContent = bookings.filter(b => b.status === 'paid' || b.status === 'entered').length;
-            document.getElementById('countInside').textContent = bookings.filter(b => b.entered).length;
-            document.getElementById('countArtists').textContent = artists.length;
-            const rev = bookings.filter(b => b.status === 'paid' || b.status === 'entered').reduce((s, b) => s + (b.total || 0), 0);
-            document.getElementById('revenueTotal').textContent = 'KSH ' + rev.toLocaleString();
-            document.getElementById('recentTable').innerHTML = bookings.slice(0, 8).map(b =>
-                `<tr><td>${b.ref}</td><td>${b.name}</td><td>${b.phone}</td><td>${b.ticket}</td><td>KSH ${(b.total||0).toLocaleString()}</td><td><span class="badge ${b.status}">${b.status}</span></td></tr>`
-            ).join('') || '<tr><td colspan="6">No bookings</td></tr>';
+        function artistCard(a) {
+            const imgHTML = a.image_url ? `<img src="${a.image_url}" alt="${a.name}" class="artist-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="artist-photo-placeholder" style="display:none">🎤</div>` : `<div class="artist-photo-placeholder">🎤</div>`;
+            return `<div class="artist-card">${imgHTML}<h3>${a.name}</h3><div class="role">${a.role||''}</div></div>`;
         }
 
-        // ==================== RENDER BOOKINGS ====================
-        function renderBookings() {
-            const s = (document.getElementById('searchInput')?.value || '').toLowerCase();
-            const st = document.getElementById('statusFilter')?.value || 'all';
-            let f = bookings;
-            if (s) f = f.filter(b => b.name.toLowerCase().includes(s) || b.phone.includes(s) || b.ref.toLowerCase().includes(s));
-            if (st === 'entered') f = f.filter(b => b.entered);
-            else if (st !== 'all') f = f.filter(b => b.status === st);
-            document.getElementById('bookingsTable').innerHTML = f.map(b =>
-                `<tr>
-                    <td>${b.ref}</td>
-                    <td>${b.name}</td>
-                    <td>${b.phone}</td>
-                    <td>${b.email}</td>
-                    <td>${b.ticket}</td>
-                    <td>${b.qty}</td>
-                    <td>KSH ${(b.total||0).toLocaleString()}</td>
-                    <td><span class="badge ${b.status}">${b.status}</span></td>
-                    <td>${b.entered?'✅':'❌'}</td>
-                    <td><div class="actions-cell">
-                        ${!b.entered&&b.status==='paid'?`<button class="btn-act enter" data-ref="${b.ref}">IN</button>`:''}
-                        ${b.entered?`<button class="btn-act reset" data-ref="${b.ref}">OUT</button>`:''}
-                        <button class="btn-act view" data-ref="${b.ref}">🎫</button>
-                        <button class="btn-act delete" data-ref="${b.ref}">X</button>
-                    </div></td>
-                </tr>`
-            ).join('') || '<tr><td colspan="10">No bookings</td></tr>';
-            document.querySelectorAll('#bookingsTable .btn-act').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const ref = this.getAttribute('data-ref');
-                    if (this.classList.contains('enter')) markEntry(ref);
-                    else if (this.classList.contains('reset')) resetEntry(ref);
-                    else if (this.classList.contains('delete')) deleteBooking(ref);
-                    else if (this.classList.contains('view')) showTicketModal(ref);
-                });
-            });
+        // ==================== NAVIGATION ====================
+        function goTo(p) {
+            sessionStorage.setItem('gusii_page', p);
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('on'));
+            const sec = document.getElementById('page-' + p);
+            if (sec) sec.classList.add('active');
+            document.querySelectorAll('.nav-link[data-page="' + p + '"]').forEach(l => l.classList.add('on'));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('navLinks').classList.remove('open');
+            if (p === 'artists') loadArtists();
         }
+        const savedPage = sessionStorage.getItem('gusii_page');
+        if (savedPage && savedPage !== 'home') { setTimeout(() => goTo(savedPage), 200); }
+        document.querySelectorAll('.nav-link').forEach(l => l.addEventListener('click', function(e) { e.preventDefault(); goTo(this.getAttribute('data-page')); }));
+        document.getElementById('navGetTickets').addEventListener('click', function(e) { e.preventDefault(); goTo('book'); });
+        document.getElementById('homeGetTickets').addEventListener('click', () => goTo('book'));
 
-        // ==================== RENDER ARTISTS ====================
-        function renderArtists() {
-            if (!Array.isArray(artists) || artists.length === 0) {
-                document.getElementById('artistsList').innerHTML = '<p style="text-align:center;color:#666">No artists found.</p>';
-                return;
-            }
-            document.getElementById('artistsList').innerHTML = artists.map(a =>
-                `<div class="artist-card-admin">
-                    <img src="${a.image_url||'https://via.placeholder.com/45'}" alt="${a.name}" onerror="this.style.display='none'">
-                    <div class="artist-info">
-                        <div class="artist-name">${a.name}</div>
-                        <div class="artist-role">${a.role} • ${a.category}</div>
-                    </div>
-                    <button class="btn-act edit" data-id="${a.id}">✏️</button>
-                    <button class="btn-act delete" data-id="${a.id}">🗑</button>
-                </div>`
-            ).join('');
-            document.querySelectorAll('#artistsList .btn-act.edit').forEach(btn => btn.addEventListener('click', function() {
-                editArtist(parseInt(this.getAttribute('data-id')));
-            }));
-            document.querySelectorAll('#artistsList .btn-act.delete').forEach(btn => btn.addEventListener('click', function() {
-                deleteArtist(parseInt(this.getAttribute('data-id')));
-            }));
-        }
+        // ==================== TICKET SELECTION ====================
+        document.querySelectorAll('.pcard').forEach(card => card.addEventListener('click', function() {
+            document.querySelectorAll('.pcard').forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+            selName = this.getAttribute('data-ticket');
+            selPrice = parseInt(this.getAttribute('data-price'));
+            document.getElementById('bTicket').value = selName + '|' + selPrice;
+            document.getElementById('bTicket2').value = selName + '|' + selPrice;
+            updateS();
+            updateS2();
+            document.getElementById('bookingFormSection').style.display = 'block';
+            document.getElementById('bookingFormSection').scrollIntoView({ behavior: 'smooth' });
+        }));
 
-        // ==================== ARTIST CRUD ====================
-        document.getElementById('addArtistBtn').addEventListener('click', () => editArtist(null));
+        function updateS() { document.getElementById('sumTotal').textContent = 'KSH ' + ((parseInt(document.getElementById('bQty').value) || 1) * selPrice).toLocaleString(); }
+        function updateS2() { document.getElementById('sumTotal2').textContent = 'KSH ' + ((parseInt(document.getElementById('bQty2').value) || 1) * selPrice).toLocaleString(); }
+        document.getElementById('bTicket').addEventListener('change', function() { if (this.value) { const [n, p] = this.value.split('|');
+                selName = n;
+                selPrice = parseInt(p); } updateS(); });
+        document.getElementById('bTicket2').addEventListener('change', function() { if (this.value) { const [n, p] = this.value.split('|');
+                selName = n;
+                selPrice = parseInt(p); } updateS2(); });
+        document.getElementById('bQty').addEventListener('input', updateS);
+        document.getElementById('bQty2').addEventListener('input', updateS2);
 
-        function editArtist(id) {
-            const a = id ? artists.find(x => x.id === id) : { name: '', role: 'Guest Artist', category: 'guest_artist', image_url: '', bio: '' };
-            document.getElementById('artistModalContent').innerHTML = `
-                <h3>${id?'Edit':'Add'} Artist</h3>
-                <div class="form-group"><label>Name</label><input type="text" id="eaName" value="${a.name||''}"></div>
-                <div class="form-group"><label>Role</label><input type="text" id="eaRole" value="${a.role||''}"></div>
-                <div class="form-group"><label>Category</label><select id="eaCat">
-                    <option value="music_policy" ${a.category==='music_policy'?'selected':''}>Music Policy</option>
-                    <option value="host" ${a.category==='host'?'selected':''}>Host</option>
-                    <option value="guest_artist" ${a.category==='guest_artist'?'selected':''}>Guest Artist</option>
-                </select></div>
-                <div class="form-group"><label>Image URL</label><input type="text" id="eaImg" value="${a.image_url||''}"></div>
-                <button class="btn-save" onclick="saveArtist(${id||0})" style="width:100%">💾 Save</button>
-            `;
-            document.getElementById('artistModal').classList.add('show');
-        }
+        // ==================== COUNTDOWN ====================
+        setInterval(() => {
+            const d = new Date('July 18, 2026 18:00:00').getTime() - Date.now();
+            if (d < 0) return;
+            document.getElementById('cd-d').textContent = String(Math.floor(d / 86400000)).padStart(2, '0');
+            document.getElementById('cd-h').textContent = String(Math.floor((d % 86400000) / 3600000)).padStart(2, '0');
+            document.getElementById('cd-m').textContent = String(Math.floor((d % 3600000) / 60000)).padStart(2, '0');
+            document.getElementById('cd-s').textContent = String(Math.floor((d % 60000) / 1000)).padStart(2, '0');
+        }, 1000);
 
-        async function saveArtist(id) {
-            const data = {
-                name: document.getElementById('eaName').value,
-                role: document.getElementById('eaRole').value,
-                category: document.getElementById('eaCat').value,
-                image_url: document.getElementById('eaImg').value
-            };
-            if (!data.name) { alert('Name required!'); return; }
-            try {
-                if (id) {
-                    await fetch(`${REST_URL}/artists?id=eq.${id}`, { method: 'PATCH', headers: H, body: JSON.stringify(data) });
-                } else {
-                    await fetch(`${REST_URL}/artists`, { method: 'POST', headers: H, body: JSON.stringify(data) });
-                }
-                document.getElementById('artistModal').classList.remove('show');
-                await loadAll();
-            } catch (e) { alert('Error'); }
-        }
+        // ==================== WHATSAPP ====================
+        document.getElementById('waPayBtn').addEventListener('click', function() {
+            const n = document.getElementById('bName').value.trim(),
+                p = document.getElementById('bPhone').value.trim(),
+                e = document.getElementById('bEmail').value.trim(),
+                q = parseInt(document.getElementById('bQty').value) || 1,
+                t = selPrice * q;
+            const msg = `*GUSII NIGHT EXPERIENCE*\n\n👤 ${n||'N/A'}\n📱 ${p||'N/A'}\n📧 ${e||'N/A'}\n🎫 ${selName||'N/A'} x${q}\n💰 KSH ${t.toLocaleString()}\n\nPlease reserve. Pay via Pochi: 0794 346 184`;
+            window.open('https://wa.me/254794346184?text=' + encodeURIComponent(msg), '_blank');
+        });
+        document.getElementById('waPayBtn2').addEventListener('click', function() {
+            const n = document.getElementById('bName2').value.trim(),
+                p = document.getElementById('bPhone2').value.trim(),
+                e = document.getElementById('bEmail2').value.trim(),
+                q = parseInt(document.getElementById('bQty2').value) || 1,
+                t = selPrice * q;
+            const msg = `*GUSII NIGHT EXPERIENCE*\n\n👤 ${n||'N/A'}\n📱 ${p||'N/A'}\n📧 ${e||'N/A'}\n🎫 ${selName||'N/A'} x${q}\n💰 KSH ${t.toLocaleString()}\n\nPlease reserve. Pay via Pochi: 0794 346 184`;
+            window.open('https://wa.me/254794346184?text=' + encodeURIComponent(msg), '_blank');
+        });
 
-        async function deleteArtist(id) {
-            if (!confirm('Delete?')) return;
-            try {
-                await fetch(`${REST_URL}/artists?id=eq.${id}`, { method: 'DELETE', headers: H });
-                await loadAll();
-            } catch (e) {}
-        }
+        // ==================== HELPERS ====================
+        function fmtPhone(p) { let x = p.replace(/[\s\-\(\)]/g, '').replace(/^0/, '254').replace(/^\+/, ''); return x.startsWith('254') ? x : '254' + x; }
 
-        // ==================== BOOKING ACTIONS ====================
-        async function deleteBooking(ref) {
-            if (!confirm('Delete ' + ref + '?')) return;
-            try {
-                await fetch(`${REST_URL}/bookings?booking_reference=eq.${ref}`, { method: 'DELETE', headers: H_SERVICE });
-                bookings = bookings.filter(b => b.ref !== ref);
-                refreshAll();
-            } catch (e) {}
-        }
+        function stopPolling() { isPolling = false; if (pollTimer) { clearInterval(pollTimer);
+                pollTimer = null; } pollTries = 0; }
 
-        async function markEntry(ref) {
-            const b = bookings.find(x => x.ref === ref);
-            if (!b || b.status !== 'paid' || b.entered) return;
-            try {
-                await fetch(`${REST_URL}/bookings?booking_reference=eq.${ref}`, {
-                    method: 'PATCH',
-                    headers: H_SERVICE,
-                    body: JSON.stringify({ gate_entered: true, gate_time: new Date().toISOString(), status: 'entered' })
-                });
-                b.entered = true;
-                b.status = 'entered';
-                refreshAll();
-            } catch (e) {}
-        }
-
-        async function resetEntry(ref) {
-            if (!confirm('Reset?')) return;
-            const b = bookings.find(x => x.ref === ref);
-            if (!b) return;
-            try {
-                await fetch(`${REST_URL}/bookings?booking_reference=eq.${ref}`, {
-                    method: 'PATCH',
-                    headers: H_SERVICE,
-                    body: JSON.stringify({ gate_entered: false, gate_time: null, status: 'paid' })
-                });
-                b.entered = false;
-                b.status = 'paid';
-                refreshAll();
-            } catch (e) {}
-        }
-
-        // ==================== SEND EMAIL VIA EMAILJS ====================
-        async function sendTicketEmail(toEmail, name, ref, ticket, qty, total, phone) {
-            // Validate email
-            if (!toEmail || toEmail === 'N/A' || toEmail === '' || !toEmail.includes('@')) {
-                console.error('Invalid recipient email:', toEmail);
-                return { success: false, error: 'Invalid recipient email: ' + toEmail };
-            }
-
-            try {
-                // Generate QR code URL
-                const qrData = JSON.stringify({ 
-                    ref, 
-                    name, 
-                    ticket, 
-                    phone, 
-                    event: "GUSII NIGHT EXPERIENCE", 
-                    date: "2026-07-18" 
-                });
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}&color=0D5E3A&bgcolor=ffffff&margin=10`;
-                
-                // Email template parameters - Using {{email}} as the recipient placeholder
-                // The template should have {{email}} as the recipient field
-                const templateParams = {
-                    email: toEmail,                      // recipient email - matches {{email}} in template
-                    name: name,                          // recipient name
-                    ticket_ref: ref,                     // booking reference
-                    ticket_type: ticket,                 // ticket type (Regular/VIP)
-                    quantity: qty,                       // number of tickets
-                    total_amount: total,                 // total amount
-                    phone: phone,                        // phone number
-                    qr_code: qrUrl,                      // QR code image URL
-                    event_name: "GUSII NIGHT EXPERIENCE", // event name
-                    event_date: "July 18, 2026",          // event date
-                    venue: "Brimak Hotel, Utawala",       // venue
-                };
-
-                console.log('📧 Sending email with params:', templateParams);
-
-                const response = await emailjs.send(
-                    EMAILJS_SERVICE_ID, 
-                    EMAILJS_TEMPLATE_ID, 
-                    templateParams
-                );
-                
-                console.log('✅ Email sent successfully:', response);
-                return { success: true, response: response };
-                
-            } catch (error) {
-                console.error('❌ Email send error:', error);
-                return { 
-                    success: false, 
-                    error: error.text || error.message || 'Unknown error',
-                    details: error
-                };
-            }
-        }
-
-        // ==================== SHOW TICKET MODAL ====================
+        // ==================== SHOW TICKET ====================
         function showTicketInline(ref, name, ticket, phone, qty, total) {
             const qrData = JSON.stringify({ ref, name, ticket, phone, event: "GUSII NIGHT EXPERIENCE", date: "2026-07-18" });
             const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}&color=0D5E3A&bgcolor=ffffff&margin=10`;
             return `<div class="ticket-display" id="ticketPrint">
-                <div class="ticket-header"><h2>GUSII NIGHT EXPERIENCE</h2><p style="font-size:11px;color:#666">Brimak Hotel, Utawala | July 18, 2026</p></div>
+                <div class="ticket-header"><h2>🎵 GUSII NIGHT EXPERIENCE</h2><p style="font-size:11px;color:#666">Brimak Hotel, Utawala | July 18, 2026</p></div>
                 <div style="padding:8px">
                     <div style="background:#FDF6E3;padding:6px;border-radius:6px;margin-bottom:8px">
                         <span style="font-size:9px;color:#666">REF</span><br>
@@ -454,7 +302,8 @@
                         <img src="${qrUrl}" width="120" height="120" alt="QR" crossorigin="anonymous">
                     </div>
                     <p style="font-weight:700;color:#0D5E3A;margin-top:6px">KSH ${total.toLocaleString()}</p>
-                    <button class="btn-download" onclick="downloadTicket('${ref}')">📥 Download</button>
+                    <button class="btn-download" onclick="downloadTicket('${ref}')">📥 Download Ticket</button>
+                    <p style="font-size:10px;color:#666;margin-top:4px">Show this at the gate for entry</p>
                 </div>
             </div>`;
         }
@@ -470,238 +319,202 @@
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-            } catch (e) {}
+            } catch (e) { alert('Error downloading ticket. Please try again.'); }
         };
 
-        async function showTicketModal(ref) {
-            const b = bookings.find(x => x.ref === ref);
-            if (!b) return;
-            const content = document.getElementById('ticketContent');
-            content.innerHTML = showTicketInline(b.ref, b.name, b.ticket, b.phone, b.qty, b.total);
-            
-            // Send email automatically when viewing ticket (if status is paid/entered and email exists)
-            if ((b.status === 'paid' || b.status === 'entered') && b.email && b.email !== 'N/A') {
-                const result = await sendTicketEmail(b.email, b.name, b.ref, b.ticket, b.qty, b.total, b.phone);
-                if (result.success) {
-                    content.innerHTML += `<p style="color:#065f46;font-size:0.8rem;margin-top:0.5rem;">✅ Ticket sent to ${b.email}</p>`;
-                } else {
-                    content.innerHTML += `<p style="color:#991b1b;font-size:0.8rem;margin-top:0.5rem;">❌ Email failed: ${result.error}</p>`;
+        // ==================== SEND EMAIL ====================
+        async function sendTicketEmail(toEmail, name, ref, ticket, qty, total, phone) {
+            if (!toEmail || toEmail === 'N/A' || !toEmail.includes('@')) {
+                console.error('Invalid email:', toEmail);
+                return { success: false, error: 'Invalid email' };
+            }
+            try {
+                const qrData = JSON.stringify({ ref, name, ticket, phone, event: "GUSII NIGHT EXPERIENCE", date: "2026-07-18" });
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}&color=0D5E3A&bgcolor=ffffff&margin=10`;
+                const templateParams = {
+                    email: toEmail,
+                    name: name,
+                    ticket_ref: ref,
+                    ticket_type: ticket,
+                    quantity: qty,
+                    total_amount: total,
+                    phone: phone,
+                    qr_code: qrUrl,
+                    event_name: "GUSII NIGHT EXPERIENCE",
+                    event_date: "July 18, 2026",
+                    venue: "Brimak Hotel, Utawala",
+                };
+                const response = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+                console.log('✅ Email sent:', response);
+                return { success: true };
+            } catch (error) {
+                console.error('❌ Email error:', error);
+                return { success: false, error: error.text || error.message };
+            }
+        }
+
+        // ==================== CHECK PAYMENT STATUS ====================
+        async function checkPaymentStatus(ref, btn, msg, name, qty, total) {
+            try {
+                const res = await fetch(`${PAYMENT_STATUS_URL}?ref=${ref}`);
+                const data = await res.json();
+                console.log('Payment status check:', data);
+
+                if (data.isPaid === true || data.status === 'paid') {
+                    stopPolling();
+                    msg.className = 'msg-box show ok';
+                    const ticketHTML = showTicketInline(ref, name, selName, document.getElementById('bPhone').value || '', qty, total);
+                    msg.innerHTML = `
+                        <div style="font-size:2.5rem;">✅</div>
+                        <h3 style="color:#0D5E3A">Payment Successful!</h3>
+                        <p>Your ticket has been sent to your email.</p>
+                        ${ticketHTML}
+                    `;
+                    btn.style.display = 'none';
+                    return true;
+                } else if (data.status === 'failed' || data.status === 'cancelled') {
+                    stopPolling();
+                    msg.className = 'msg-box show warn';
+                    msg.innerHTML = `
+                        <h3>⚠️ Payment ${data.status === 'cancelled' ? 'Cancelled' : 'Failed'}</h3>
+                        <p>You can pay via Pochi: <strong>0794 346 184</strong></p>
+                        <button class="btn-retry" onclick="location.reload()">Try Again</button>
+                    `;
+                    btn.disabled = false;
+                    btn.innerHTML = '📱 Pay via M-PESA';
+                    return true;
                 }
-            } else if (b.status === 'paid' || b.status === 'entered') {
-                content.innerHTML += `<p style="color:#92400e;font-size:0.8rem;margin-top:0.5rem;">⚠️ No valid email on file. Ticket not sent.</p>`;
+                return false;
+            } catch (e) {
+                console.error('Status check error:', e);
+                return false;
             }
-            document.getElementById('ticketModal').classList.add('show');
         }
 
-        // ==================== GATE: SCAN / CAMERA ====================
-        document.getElementById('gateInput').addEventListener('input', function() {
-            const i = this.value.trim();
-            if (i.length < 4) return;
-            setTimeout(() => {
-                const b = bookings.find(x => x.ref.toLowerCase() === i.toLowerCase() || x.phone === i);
-                if (b) processGate(b);
-            }, 300);
-        });
-
-        async function processGate(b) {
-            const r = document.getElementById('gateResult');
-            if (b.entered) {
-                r.className = 'result-box show warn';
-                r.innerHTML = '<h2>⚠️ Already Inside</h2>';
-                return;
-            }
-            if (b.status === 'pending') {
-                r.className = 'result-box show warn';
-                r.innerHTML = '<h2>⚠️ Payment Pending</h2>';
-                return;
-            }
-            try {
-                await fetch(`${REST_URL}/bookings?booking_reference=eq.${b.ref}`, {
-                    method: 'PATCH',
-                    headers: H_SERVICE,
-                    body: JSON.stringify({ gate_entered: true, gate_time: new Date().toISOString(), status: 'entered' })
-                });
-                b.entered = true;
-                b.status = 'entered';
-                r.className = 'result-box show allow';
-                r.innerHTML = '<h2>✅ ENTRY GRANTED</h2><p>' + b.name + '</p>';
-                refreshAll();
-            } catch (e) {}
+        // ==================== POLL PAYMENT STATUS ====================
+        function startPolling(ref, btn, msg, name, qty, total) {
+            isPolling = true;
+            pollTries = 0;
+            pollTimer = setInterval(async () => {
+                if (!isPolling) return;
+                pollTries++;
+                const done = await checkPaymentStatus(ref, btn, msg, name, qty, total);
+                if (done) {
+                    stopPolling();
+                } else if (pollTries >= MAX_POLLS) {
+                    stopPolling();
+                    msg.className = 'msg-box show warn';
+                    msg.innerHTML = `
+                        <h3>⏳ Still Processing</h3>
+                        <p>If you paid, the ticket will be sent automatically.</p>
+                        <p>Pay via Pochi: <strong>0794 346 184</strong></p>
+                        <button class="btn-retry" onclick="location.reload()">Try Again</button>
+                    `;
+                    btn.disabled = false;
+                    btn.innerHTML = '📱 Pay via M-PESA';
+                }
+            }, POLL_INTERVAL);
         }
 
-        // ==================== ADD BOOKING & SEND EMAIL ====================
-        document.getElementById('saveBookingBtn').addEventListener('click', async function() {
-            const statusDiv = document.getElementById('saveStatus');
-            statusDiv.style.display = 'block';
-            statusDiv.className = 'status-msg info';
-            statusDiv.textContent = '⏳ Saving booking...';
+        // ==================== HANDLE BOOKING ====================
+        async function handleBooking(btn, msg, name, phone, email, qty, total) {
+            if (!selName) { alert('Please select a ticket!'); return; }
+            if (!name || !phone || !email) { alert('Please fill in all required fields!'); return; }
             
-            const name = document.getElementById('addName').value.trim();
-            const phone = document.getElementById('addPhone').value.trim();
-            const email = document.getElementById('addEmail').value.trim();
-            const ticket = document.getElementById('addTicket').value;
-            const qty = parseInt(document.getElementById('addQty').value) || 1;
-            const status = document.getElementById('addStatus').value;
-            
-            if (!name || !phone) { 
-                statusDiv.className = 'status-msg error';
-                statusDiv.textContent = '❌ Name & phone required!';
-                return; 
-            }
-            if (!email || !email.includes('@')) {
-                statusDiv.className = 'status-msg error';
-                statusDiv.textContent = '❌ Please enter a valid email for ticket delivery!';
-                return;
-            }
-            
-            const prices = { Regular: 500, VIP: 1000 };
-            const price = prices[ticket] || 500;
-            const total = price * qty;
-            const ref = 'GUS-' + Date.now().toString(36).toUpperCase();
-            
+            stopPolling();
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Sending...';
+            msg.className = 'msg-box show info';
+            msg.innerHTML = '<span class="spinner"></span> Initiating M-PESA payment...';
+
+            const formattedPhone = fmtPhone(phone);
+            console.log('Initiating STK Push for:', formattedPhone, 'Amount:', total);
+
             try {
-                const res = await fetch(`${REST_URL}/bookings`, {
+                const res = await fetch(STKPUSH_URL, {
                     method: 'POST',
-                    headers: H_SERVICE,
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        booking_reference: ref,
-                        full_name: name,
-                        phone,
-                        email,
-                        ticket_type: ticket,
+                        phone: formattedPhone,
+                        amount: total,
+                        name: name,
+                        email: email,
+                        ticketType: selName,
                         quantity: qty,
-                        price_per_ticket: price,
-                        total_amount: total,
-                        status,
-                        gate_entered: false,
-                        payment_method: 'admin',
-                        payment_status: status === 'paid' ? 'completed' : 'pending'
+                        pricePerTicket: selPrice
                     })
                 });
-                
-                if (!res.ok) {
-                    const err = await res.text();
-                    throw new Error('DB error: ' + err);
-                }
-                
-                statusDiv.className = 'status-msg success';
-                statusDiv.textContent = '✅ Booking saved! Ref: ' + ref;
 
-                // SEND EMAIL if status is paid
-                if (status === 'paid') {
-                    statusDiv.className = 'status-msg info';
-                    statusDiv.textContent = '📧 Sending ticket to ' + email + '...';
-                    
-                    const result = await sendTicketEmail(email, name, ref, ticket, qty, total, phone);
-                    
-                    if (result.success) {
-                        statusDiv.className = 'status-msg success';
-                        statusDiv.textContent = '✅ Booking saved & ticket sent to ' + email + '! Ref: ' + ref;
-                    } else {
-                        statusDiv.className = 'status-msg error';
-                        statusDiv.textContent = '⚠️ Booking saved but email failed: ' + result.error;
-                        console.error('Email error details:', result.details);
-                    }
+                const data = await res.json();
+                console.log('STK Push response:', data);
+
+                if (data.success) {
+                    currentRef = data.reference || ('GUS-' + Date.now().toString(36).toUpperCase());
+                    msg.innerHTML = `
+                        <h3 style="color:#0D5E3A">📱 Check Your Phone</h3>
+                        <p>Enter your M-PESA PIN for <strong>KSH ${total.toLocaleString()}</strong></p>
+                        <div class="ref">${currentRef}</div>
+                        <p style="font-size:0.7rem;color:#666;margin-top:4px;">Waiting for confirmation...</p>
+                    `;
+                    btn.innerHTML = '⏳ Waiting for payment...';
+                    startPolling(currentRef, btn, msg, name, qty, total);
                 } else {
-                    statusDiv.className = 'status-msg info';
-                    statusDiv.textContent = '✅ Booking saved as pending. Ref: ' + ref;
+                    msg.className = 'msg-box show warn';
+                    msg.innerHTML = `
+                        <h3>⚠️ STK Push Failed</h3>
+                        <p>${data.message || 'Please try again or use Pochi below.'}</p>
+                        <p>Pay via Pochi: <strong>0794 346 184</strong></p>
+                        <button class="btn-retry" onclick="location.reload()">Try Again</button>
+                    `;
+                    btn.disabled = false;
+                    btn.innerHTML = '📱 Pay via M-PESA';
                 }
-
-                // Clear fields
-                document.getElementById('addName').value = '';
-                document.getElementById('addPhone').value = '';
-                document.getElementById('addEmail').value = '';
-                await loadAll();
-                
-            } catch (e) {
-                statusDiv.className = 'status-msg error';
-                statusDiv.textContent = '❌ Error: ' + e.message;
-                console.error('Save error:', e);
+            } catch (error) {
+                console.error('STK Push error:', error);
+                msg.className = 'msg-box show warn';
+                msg.innerHTML = `
+                    <h3>⚠️ Connection Error</h3>
+                    <p>Please try again or pay via Pochi: <strong>0794 346 184</strong></p>
+                    <button class="btn-retry" onclick="location.reload()">Try Again</button>
+                `;
+                btn.disabled = false;
+                btn.innerHTML = '📱 Pay via M-PESA';
             }
-        });
-
-        // ==================== EXPORT ====================
-        document.getElementById('exportCSVBtn').addEventListener('click', () => {
-            if (!bookings.length) return;
-            const csv = 'Ref,Name,Phone,Email,Ticket,Qty,Total,Status\n' + bookings.map(b =>
-                `"${b.ref}","${b.name}","${b.phone}","${b.email}","${b.ticket}",${b.qty},${b.total},"${b.status}"`
-            ).join('\n');
-            downloadBlob(csv, 'bookings.csv');
-        });
-        document.getElementById('exportJSONBtn').addEventListener('click', () => {
-            downloadBlob(JSON.stringify({ bookings, artists }, null, 2), 'data.json');
-        });
-
-        function downloadBlob(c, f) {
-            const b = new Blob([c], { type: 'text/plain' }),
-                a = document.createElement('a');
-            a.href = URL.createObjectURL(b);
-            a.download = f;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
         }
 
-        // ==================== TABS ====================
-        document.querySelectorAll('.tabs button').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('on'));
-                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-                this.classList.add('on');
-                document.getElementById('panel-' + this.getAttribute('data-tab')).classList.add('active');
-            });
+        // ==================== FORM SUBMISSIONS ====================
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleBooking(
+                document.getElementById('payBtn'),
+                document.getElementById('msgBox'),
+                document.getElementById('bName').value.trim(),
+                document.getElementById('bPhone').value.trim(),
+                document.getElementById('bEmail').value.trim(),
+                parseInt(document.getElementById('bQty').value) || 1,
+                selPrice * (parseInt(document.getElementById('bQty').value) || 1)
+            );
         });
-        document.getElementById('searchInput').addEventListener('input', renderBookings);
-        document.getElementById('statusFilter').addEventListener('change', renderBookings);
 
-        // ==================== GATE CAMERA (basic) ====================
-        let camActive = false;
-        document.getElementById('gateCameraBtn').addEventListener('click', async function() {
-            const container = document.getElementById('gateCamContainer');
-            if (camActive) {
-                if (gateStream) { gateStream.getTracks().forEach(t => t.stop());
-                    gateStream = null; }
-                container.style.display = 'none';
-                camActive = false;
-                this.textContent = '📷 Camera';
-                return;
-            }
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                gateStream = stream;
-                document.getElementById('gateVideo').srcObject = stream;
-                container.style.display = 'block';
-                camActive = true;
-                this.textContent = '⏹ Stop';
-                const video = document.getElementById('gateVideo');
-                const canvas = document.getElementById('gateCanvas');
-                const ctx = canvas.getContext('2d');
-                const scanInterval = setInterval(() => {
-                    if (!camActive) { clearInterval(scanInterval); return; }
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    ctx.drawImage(video, 0, 0);
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const code = jsQR(imageData.data, imageData.width, imageData.height);
-                    if (code && code.data) {
-                        const ref = code.data.trim();
-                        const b = bookings.find(x => x.ref.toLowerCase() === ref.toLowerCase());
-                        if (b) {
-                            processGate(b);
-                        }
-                    }
-                }, 2000);
-                window._scanInterval = scanInterval;
-            } catch (e) { alert('Camera access denied'); }
+        document.getElementById('bookingForm2').addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleBooking(
+                document.getElementById('payBtn2'),
+                document.getElementById('msgBox2'),
+                document.getElementById('bName2').value.trim(),
+                document.getElementById('bPhone2').value.trim(),
+                document.getElementById('bEmail2').value.trim(),
+                parseInt(document.getElementById('bQty2').value) || 1,
+                selPrice * (parseInt(document.getElementById('bQty2').value) || 1)
+            );
         });
 
         // ==================== INIT ====================
-        console.log('🎵 Admin Ready | Password: gusii2026');
-        console.log('📧 EmailJS Config:');
-        console.log('  Public Key:', EMAILJS_PUBLIC_KEY);
-        console.log('  Service ID:', EMAILJS_SERVICE_ID);
-        console.log('  Template ID:', EMAILJS_TEMPLATE_ID);
-        console.log('  Using {{email}} as recipient placeholder');
+        updateS();
+        updateS2();
+        loadArtists();
+        console.log('🎵 GUSII NIGHT EXPERIENCE | Payment Enabled');
+        console.log('📧 EmailJS: Public Key set, Service:', EMAILJS_SERVICE_ID);
     </script>
 </body>
 </html>
