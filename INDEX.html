@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GUSII NIGHT EXPERIENCE - Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+    </script>
+    <style>
+        :root{--forest:#0D5E3A;--gold:#D4AF37;--bg:#FDF6E3;--white:#FFF;--charcoal:#2D2D2D;--border:#E5E0D8;--red:#DC2626;--blue:#2563EB}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:#f5f0e8;color:var(--charcoal);min-height:100vh}
+        #loginScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center}
+        #loginScreen.hidden{display:none}
+        #loginScreen .box{background:white;padding:2.5rem;border-radius:16px;text-align:center;width:90%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+        #loginScreen h2{font-family:'Playfair Display',serif;color:var(--forest);margin-bottom:0.5rem}
+        #loginScreen input{width:100%;padding:0.8rem;border:2px solid var(--border);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:1rem;text-align:center;letter-spacing:3px;outline:none;margin-bottom:0.8rem}
+        #loginScreen input:focus{border-color:var(--forest)}
+        #loginScreen button{padding:0.8rem 2rem;background:var(--forest);color:white;border:none;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;width:100%}
+        #loginScreen .error{color:var(--red);font-size:0.85rem;display:none;margin-top:0.5rem}
+        #mainApp{display:none}#mainApp.show{display:block}
+        .topbar{background:var(--forest);color:white;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem}
+        .topbar h1{font-family:'Playfair Display',serif;font-size:1.2rem}
+        .topbar button{padding:0.4rem 1rem;border-radius:6px;border:none;cursor:pointer;font-weight:500;font-size:0.8rem}
+        .btn-refresh{background:white;color:var(--forest)}.btn-logout{background:var(--red);color:white}
+        .tabs{display:flex;gap:0.3rem;padding:0.8rem 2rem;background:white;border-bottom:1px solid var(--border);flex-wrap:wrap}
+        .tabs button{padding:0.5rem 1rem;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-weight:500;font-size:0.75rem;transition:0.3s}
+        .tabs button:hover{border-color:var(--forest)}.tabs button.on{background:var(--forest);color:white;border-color:var(--forest)}
+        .main-content{padding:1.5rem;max-width:1400px;margin:0 auto}
+        .panel{display:none}.panel.active{display:block}
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0.8rem;margin-bottom:1.5rem}
+        .stat-card{background:white;padding:1rem;border-radius:10px;border-left:4px solid var(--forest);box-shadow:0 2px 10px rgba(0,0,0,0.05)}
+        .stat-card .big{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--forest)}
+        .stat-card .lbl{font-size:0.7rem;color:#666;text-transform:uppercase}
+        .card{background:white;border-radius:10px;overflow:hidden;margin-bottom:1rem;box-shadow:0 2px 10px rgba(0,0,0,0.05)}
+        .card-header{padding:0.8rem 1.2rem;font-weight:600;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .table-wrap{overflow-x:auto}
+        table{width:100%;border-collapse:collapse;min-width:800px}
+        th{background:var(--forest);color:white;padding:0.6rem 0.4rem;text-align:left;font-size:0.65rem;font-weight:500;text-transform:uppercase}
+        td{padding:0.4rem;border-bottom:1px solid var(--border);font-size:0.75rem}
+        tr:hover td{background:#fdf6e3}
+        .badge{display:inline-block;padding:0.15rem 0.5rem;border-radius:10px;font-size:0.6rem;font-weight:600}
+        .badge.paid{background:#d1fae5;color:#065f46}.badge.pending{background:#fef3c7;color:#92400e}.badge.entered{background:#dbeafe;color:#1e40af}
+        .actions-cell{display:flex;gap:3px;flex-wrap:wrap}
+        .btn-act{padding:3px 8px;border-radius:4px;border:none;cursor:pointer;font-size:0.6rem;font-weight:600;color:white}
+        .btn-act.view{background:#f59e0b}.btn-act.enter{background:var(--forest)}.btn-act.reset{background:#f97316}.btn-act.delete{background:var(--red)}.btn-act.edit{background:var(--blue)}
+        .search-bar{display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap}
+        .search-bar input,.search-bar select{padding:0.5rem 0.8rem;border:1px solid var(--border);border-radius:6px;font-size:0.85rem;outline:none}
+        .form-group{margin-bottom:0.8rem}.form-group label{display:block;margin-bottom:0.2rem;font-weight:500;font-size:0.8rem;text-transform:uppercase}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:0.6rem 0.8rem;border:1px solid var(--border);border-radius:6px;font-size:0.9rem;outline:none;font-family:'Inter',sans-serif}
+        .btn-save{padding:0.6rem 1.5rem;background:var(--forest);color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:0.85rem}
+        .artist-card-admin{background:white;border:1px solid var(--border);border-radius:10px;padding:0.8rem 1rem;display:flex;align-items:center;gap:1rem;margin-bottom:0.4rem}
+        .artist-card-admin img{width:45px;height:45px;border-radius:50%;object-fit:cover;background:#eee}
+        .artist-card-admin .artist-info{flex:1}.artist-card-admin .artist-name{font-weight:600;color:var(--forest)}.artist-card-admin .artist-role{font-size:0.7rem;color:#666}
+        .gate-box{text-align:center;padding:2rem}.gate-box input{font-family:'JetBrains Mono',monospace;font-size:1.2rem;text-align:center;letter-spacing:3px;padding:0.8rem;border:2px solid var(--border);border-radius:8px;width:350px;max-width:90%;outline:none}
+        .result-box{margin-top:1rem;padding:1.5rem;border-radius:12px;display:none;text-align:center}
+        .result-box.show{display:block}.result-box.allow{background:#ecfdf5;border:2px solid #6ee7b7}.result-box.deny{background:#fef2f2;border:2px solid #fca5a5}.result-box.warn{background:#fffbeb;border:2px solid #fcd34d}
+        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center}
+        .modal-overlay.show{display:flex}.modal-box{background:white;border-radius:12px;padding:1.5rem;width:95%;max-width:500px;max-height:85vh;overflow-y:auto;position:relative}
+        .modal-close{position:absolute;top:10px;right:15px;font-size:1.5rem;cursor:pointer;background:none;border:none}
+        .ticket-display{background:var(--white);border:2px solid var(--forest);border-radius:14px;padding:1.2rem;margin:0.8rem 0;text-align:center}
+        .ticket-display .ticket-header{border-bottom:1px solid var(--border);padding-bottom:0.8rem;margin-bottom:0.8rem}
+        .ticket-display .ticket-header h2{font-family:'Playfair Display',serif;color:var(--forest);font-size:1.2rem}
+        .btn-download{display:inline-block;background:var(--forest);color:var(--white);padding:0.6rem 1.3rem;border-radius:6px;font-weight:600;cursor:pointer;margin:0.4rem;border:none;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;transition:0.3s}
+        .btn-download:hover{background:#0A4A2E}
+        .status-msg{padding:0.5rem;border-radius:6px;margin-top:0.5rem;font-size:0.85rem;text-align:center}
+        .status-msg.success{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7}
+        .status-msg.error{background:#fef2f2;color:#991b1b;border:1px solid #fca5a5}
+        .status-msg.info{background:#eff6ff;color:#1e40af;border:1px solid #93c5fd}
+        @media(max-width:768px){.tabs button{font-size:0.65rem;padding:0.4rem 0.6rem}.main-content{padding:0.8rem}}
+    </style>
+</head>
+<body>
+    <div id="loginScreen"><div class="box"><h2>🎵 GUSII NIGHT</h2><p>Admin Dashboard</p><input type="password" id="adminPassword" placeholder="Password"><button id="loginBtn">🔐 Login</button><p class="error" id="loginError">Wrong password!</p></div></div>
+
+    <div id="mainApp">
+        <div class="topbar"><h1>🎵 GUSII NIGHT ADMIN</h1><div><button class="btn-refresh" id="refreshBtn">🔄 Refresh</button><button class="btn-logout" id="logoutBtn">🚪 Logout</button></div></div>
+        <div class="tabs">
+            <button class="on" data-tab="dashboard">📊 Dashboard</button>
+            <button data-tab="bookings">📋 Bookings</button>
+            <button data-tab="artists">🎤 Artists</button>
+            <button data-tab="gate">🚪 Gate</button>
+            <button data-tab="add">➕ Add</button>
+            <button data-tab="export">📥 Export</button>
+        </div>
+        <div class="main-content">
+            <div class="panel active" id="panel-dashboard">
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="big" id="countTotal">0</div><div class="lbl">Total</div></div>
+                    <div class="stat-card" style="border-left-color:#f59e0b"><div class="big" id="countPending">0</div><div class="lbl">Pending</div></div>
+                    <div class="stat-card" style="border-left-color:#059669"><div class="big" id="countPaid">0</div><div class="lbl">Paid</div></div>
+                    <div class="stat-card" style="border-left-color:#3b82f6"><div class="big" id="countInside">0</div><div class="lbl">Inside</div></div>
+                    <div class="stat-card" style="border-left-color:#8b5cf6"><div class="big" id="countArtists">0</div><div class="lbl">Artists</div></div>
+                    <div class="stat-card" style="border-left-color:#ec4899"><div class="big" id="revenueTotal">KSH 0</div><div class="lbl">Revenue</div></div>
+                </div>
+                <div class="card"><div class="card-header">Recent Bookings</div><div class="table-wrap"><table><thead><tr><th>Ref</th><th>Name</th><th>Phone</th><th>Ticket</th><th>Total</th><th>Status</th></tr></thead><tbody id="recentTable"></tbody></table></div></div>
+            </div>
+            <div class="panel" id="panel-bookings">
+                <div class="search-bar"><input type="text" id="searchInput" placeholder="🔍 Search..."><select id="statusFilter"><option value="all">All</option><option value="pending">Pending</option><option value="paid">Paid</option><option value="entered">Inside</option></select></div>
+                <div class="card"><div class="table-wrap"><table><thead><tr><th>Ref</th><th>Name</th><th>Phone</th><th>Email</th><th>Ticket</th><th>Qty</th><th>Total</th><th>Status</th><th>Entry</th><th>Actions</th></tr></thead><tbody id="bookingsTable"></tbody></table></div></div>
+            </div>
+            <div class="panel" id="panel-artists">
+                <div class="card"><div class="card-header">🎤 Artists <button class="btn-save" id="addArtistBtn" style="font-size:0.7rem;padding:0.3rem 0.8rem">+ Add</button></div>
+                <div style="padding:1rem" id="artistsList"><p style="text-align:center;color:#666">Loading...</p></div></div>
+            </div>
+            <div class="panel" id="panel-gate">
+                <div class="card"><div class="gate-box"><h2>🚪 Gate Entry</h2><input type="text" id="gateInput" placeholder="Scan or type reference..." autocomplete="off"><div class="result-box" id="gateResult"></div><div style="margin-top:1rem"><button class="btn-save" id="gateCameraBtn">📷 Camera</button><button class="btn-save" id="gateUploadBtn" style="background:#8b5cf6">📁 Upload</button><input type="file" id="gateFileInput" accept="image/*" style="display:none"></div><div id="gateCamContainer" style="display:none;margin-top:1rem"><video id="gateVideo" autoplay playsinline style="width:100%;max-width:400px;border-radius:8px;border:2px solid var(--forest);margin:0 auto;display:block"></video><canvas id="gateCanvas" style="display:none"></canvas></div></div></div>
+            </div>
+            <div class="panel" id="panel-add">
+                <div class="card"><div class="card-header">➕ Add Booking</div><div style="padding:1rem;max-width:500px">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem"><div class="form-group"><label>Name *</label><input type="text" id="addName"></div><div class="form-group"><label>Phone *</label><input type="tel" id="addPhone"></div></div>
+                    <div class="form-group"><label>Email *</label><input type="email" id="addEmail" placeholder="required for ticket delivery"></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.6rem"><div class="form-group"><label>Ticket</label><select id="addTicket"><option value="Regular">Regular-500</option><option value="VIP">VIP-1000</option></select></div><div class="form-group"><label>Qty</label><input type="number" id="addQty" value="1" min="1" max="20"></div><div class="form-group"><label>Status</label><select id="addStatus"><option value="paid">Paid</option><option value="pending">Pending</option></select></div></div>
+                    <button class="btn-save" id="saveBookingBtn" style="width:100%">✅ Save & Send Ticket</button>
+                    <div id="saveStatus" class="status-msg" style="display:none"></div>
+                </div></div>
+            </div>
+            <div class="panel" id="panel-export">
+                <div class="card"><div class="card-header">📥 Export</div><div style="padding:2rem;text-align:center"><button class="btn-save" id="exportCSVBtn">📊 CSV</button><button class="btn-save" id="exportJSONBtn" style="background:var(--blue);margin-left:0.5rem">📋 JSON</button></div></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="artistModal"><div class="modal-box"><button class="modal-close" onclick="document.getElementById('artistModal').classList.remove('show')">✕</button><div id="artistModalContent"></div></div></div>
+    <div class="modal-overlay" id="ticketModal"><div class="modal-box"><button class="modal-close" onclick="document.getElementById('ticketModal').classList.remove('show')">✕</button><div id="ticketContent"></div></div></div>
+
+    <script>
+        // ==================== CONFIGURATION ====================
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxdWVoZ3dybWJsY2RkYnNvaXdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2NDg1NTksImV4cCI6MjA5OTIyNDU1OX0.IN-IREWqW8GfbsExnROx41bCGnghzwMTClenIiRsSs0';
+        const SB_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxdWVoZ3dybWJsY2RkYnNvaXdiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MzY0ODU1OSwiZXhwIjoyMDk5MjI0NTU5fQ.KUmwCPT8qzyuxbXeD72MkuVr_e3_q8R8islUnmGvEqo';
+        const REST_URL = 'https://pquehgwrmblcddbsoiwb.supabase.co/rest/v1';
+        const H = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' };
+        const H_SERVICE = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_SERVICE_KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' };
+        
+        // EmailJS config
+        const EMAILJS_PUBLIC_KEY = 'UkU1y_OuKVG3zYidn';
+        const EMAILJS_SERVICE_ID = 'service_31mpkjq';
+        const EMAILJS_TEMPLATE_ID = 'template_qhpvew8';
+
+        // ==================== INIT EMAILJS ====================
+        emailjs.init({
+            publicKey: EMAILJS_PUBLIC_KEY,
+        });
+
+        // ==================== STATE ====================
+        let bookings = [],
+            artists = [],
+            gateStream = null;
+
+        // ==================== DOM REFS ====================
+        const loginScreen = document.getElementById('loginScreen');
+        const mainApp = document.getElementById('mainApp');
+        const adminPass = document.getElementById('adminPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        // ==================== LOGIN ====================
+        loginBtn.addEventListener('click', async function() {
+            if (adminPass.value === 'gusii2026') {
+                loginScreen.classList.add('hidden');
+                mainApp.classList.add('show');
+                await loadAll();
+            } else {
+                loginError.style.display = 'block';
+            }
+        });
+        adminPass.addEventListener('keypress', e => { if (e.key === 'Enter') loginBtn.click(); });
+        logoutBtn.addEventListener('click', () => {
+            loginScreen.classList.remove('hidden');
+            mainApp.classList.remove('show');
+        });
+        refreshBtn.addEventListener('click', loadAll);
+
+        // ==================== LOAD DATA ====================
+        async function loadAll() {
+            try {
+                const r = await fetch(`${REST_URL}/bookings?select=*&order=created_at.desc`, { headers: H });
+                if (r.ok) {
+                    const d = await r.json();
+                    bookings = Array.isArray(d) ? d.map(b => ({
+                        id: b.id,
+                        ref: b.booking_reference,
+                        name: b.full_name,
+                        phone: b.phone,
+                        email: b.email || 'N/A',
+                        ticket: b.ticket_type,
+                        qty: b.quantity,
+                        total: b.total_amount,
+                        status: b.status || 'pending',
+                        entered: b.gate_entered || false,
+                        gate_time: b.gate_time
+                    })) : [];
+                } else { bookings = []; }
+            } catch (e) { bookings = []; }
+            try {
+                const r = await fetch(`${REST_URL}/artists?select=*&order=display_order`, { headers: H });
+                if (r.ok) {
+                    const d = await r.json();
+                    artists = Array.isArray(d) ? d : [];
+                } else { artists = []; }
+            } catch (e) { artists = []; }
+            refreshAll();
+        }
+
+        // ==================== REFRESH UI ====================
+        function refreshAll() { refreshDash();
+            renderBookings();
+            renderArtists(); }
+
+        function refreshDash() {
+            document.getElementById('countTotal').textContent = bookings.length;
+            document.getElementById('countPending').textContent = bookings.filter(b => b.status === 'pending').length;
+            document.getElementById('countPaid').textContent = bookings.filter(b => b.status === 'paid' || b.status === 'entered').length;
+            document.getElementById('countInside').textContent = bookings.filter(b => b.entered).length;
+            document.getElementById('countArtists').textContent = artists.length;
+            const rev = bookings.filter(b => b.status === 'paid' || b.status === 'entered').reduce((s, b) => s + (b.total || 0), 0);
+            document.getElementById('revenueTotal').textContent = 'KSH ' + rev.toLocaleString();
+            document.getElementById('recentTable').innerHTML = bookings.slice(0, 8).map(b =>
+                `<tr><td>${b.ref}</td><td>${b.name}</td><td>${b.phone}</td><td>${b.ticket}</td><td>KSH ${(b.total||0).toLocaleString()}</td><td><span class="badge ${b.status}">${b.status}</span></td></tr>`
+            ).join('') || '<tr><td colspan="6">No bookings</td></tr>';
+        }
+
+        // ==================== RENDER BOOKINGS ====================
+        function renderBookings() {
+            const s = (document.getElementById('searchInput')?.value || '').toLowerCase();
+            const st = document.getElementById('statusFilter')?.value || 'all';
+            let f = bookings;
+            if (s) f = f.filter(b => b.name.toLowerCase().includes(s) || b.phone.includes(s) || b.ref.toLowerCase().includes(s));
+            if (st === 'entered') f = f.filter(b => b.entered);
+            else if (st !== 'all') f = f.filter(b => b.status === st);
+            document.getElementById('bookingsTable').innerHTML = f.map(b =>
+                `<tr>
+                    <td>${b.ref}</td>
+                    <td>${b.name}</td>
+                    <td>${b.phone}</td>
+                    <td>${b.email}</td>
+                    <td>${b.ticket}</td>
+                    <td>${b.qty}</td>
+                    <td>KSH ${(b.total||0).toLocaleString()}</td>
+                    <td><span class="badge ${b.status}">${b.status}</span></td>
+                    <td>${b.entered?'✅':'❌'}</td>
+                    <td><div class="actions-cell">
+                        ${!b.entered&&b.status==='paid'?`<button class="btn-act enter" data-ref="${b.ref}">IN</button>`:''}
+                        ${b.entered?`<button class="btn-act reset" data-ref="${b.ref}">OUT</button>`:''}
+                        <button class="btn-act view" data-ref="${b.ref}">🎫</button>
+                        <button class="btn-act delete" data-ref="${b.ref}">X</button>
+                    </div></td>
+                </tr>`
+            ).join('') || '<tr><td colspan="10">No bookings</td></tr>';
+            document.querySelectorAll('#bookingsTable .btn-act').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const ref = this.getAttribute('data-ref');
+                    if (this.classList.contains('enter')) markEntry(ref);
+                    else if (this.classList.contains('reset')) resetEntry(ref);
+                    else if (this.classList.contains('delete')) deleteBooking(ref);
+                    else if (this.classList.contains('view')) showTicketModal(ref);
+                });
+            });
+        }
+
+        // ==================== RENDER ARTISTS ====================
+        function renderArtists() {
+            if (!Array.isArray(artists) || artists.length === 0) {
+                document.getElementById('artistsList').innerHTML = '<p style="text-align:center;color:#666">No artists found.</p>';
+                return;
+            }
+            document.getElementById('artistsList').innerHTML = artists.map(a =>
+                `<div class="artist-card-admin">
+                    <img src="${a.image_url||'https://via.placeholder.com/45'}" alt="${a.name}" onerror="this.style.display='none'">
+                    <div class="artist-info">
+                        <div class="artist-name">${a.name}</div>
+                        <div class="artist-role">${a.role} • ${a.category}</div>
+                    </div>
+                    <button class="btn-act edit" data-id="${a.id}">✏️</button>
+                    <button class="btn-act delete" data-id="${a.id}">🗑</button>
+                </div>`
+            ).join('');
+            document.querySelectorAll('#artistsList .btn-act.edit').forEach(btn => btn.addEventListener('click', function() {
+                editArtist(parseInt(this.getAttribute('data-id')));
+            }));
+            document.querySelectorAll('#artistsList .btn-act.delete').forEach(btn => btn.addEventListener('click', function() {
+                deleteArtist(parseInt(this.getAttribute('data-id')));
+            }));
+        }
+
+        // ==================== ARTIST CRUD ====================
+        document.getElementById('addArtistBtn').addEventListener('click', () => editArtist(null));
+
+        function editArtist(id) {
+            const a = id ? artists.find(x => x.id === id) : { name: '', role: 'Guest Artist', category: 'guest_artist', image_url: '', bio: '' };
+            document.getElementById('artistModalContent').innerHTML = `
+                <h3>${id?'Edit':'Add'} Artist</h3>
+                <div class="form-group"><label>Name</label><input type="text" id="eaName" value="${a.name||''}"></div>
+                <div class="form-group"><label>Role</label><input type="text" id="eaRole" value="${a.role||''}"></div>
+                <div class="form-group"><label>Category</label><select id="eaCat">
+                    <option value="music_policy" ${a.category==='music_policy'?'selected':''}>Music Policy</option>
+                    <option value="host" ${a.category==='host'?'selected':''}>Host</option>
+                    <option value="guest_artist" ${a.category==='guest_artist'?'selected':''}>Guest Artist</option>
+                </select></div>
+                <div class="form-group"><label>Image URL</label><input type="text" id="eaImg" value="${a.image_url||''}"></div>
+                <button class="btn-save" onclick="saveArtist(${id||0})" style="width:100%">💾 Save</button>
+            `;
+            document.getElementById('artistModal').classList.add('show');
+        }
+
+        async function saveArtist(id) {
+            const data = {
+                name: document.getElementById('eaName').value,
+                role: document.getElementById('eaRole').value,
+                category: document.getElementById('eaCat').value,
+                image_url: document.getElementById('eaImg').value
+            };
+            if (!data.name) { alert('Name required!'); return; }
+            try {
+                if (id) {
+                    await fetch(`${REST_URL}/artists?id=eq.${id}`, { method: 'PATCH', headers: H, body: JSON.stringify(data) });
+                } else {
+                    await fetch(`${REST_URL}/artists`, { method: 'POST', headers: H, body: JSON.stringify(data) });
+                }
+                document.getElementById('artistModal').classList.remove('show');
+                await loadAll();
+            } catch (e) { alert('Error'); }
+        }
+
+        async function deleteArtist(id) {
+            if (!confirm('Delete?')) return;
+            try {
+                await fetch(`${REST_URL}/artists?id=eq.${id}`, { method: 'DELETE', headers: H });
+                await loadAll();
+            } catch (e) {}
+        }
+
+        // ==================== BOOKING ACTIONS ====================
+        async function deleteBooking(ref) {
+            if (!confirm('Delete ' + ref + '?')) return;
+            try {
+                await fetch(`${REST_URL}/bookings?booking_reference=eq.${ref}`, { method: 'DELETE', headers: H_SERVICE });
+                bookings = bookings.filter(b => b.ref !== ref);
+                refreshAll();
+            } catch (e) {}
+        }
+
+        async function markEntry(ref) {
+            const b = bookings.find(x => x.ref === ref);
+            if (!b || b.status !== 'paid' || b.entered) return;
+            try {
+                await fetch(`${REST_URL}/bookings?booking_reference=eq.${ref}`, {
+                    method: 'PATCH',
+                    headers: H_SERVICE,
+                    body: JSON.stringify({ gate_entered: true, gate_time: new Date().toISOString(), status: 'entered' })
+                });
+                b.entered = true;
+                b.status = 'entered';
+                refreshAll();
+            } catch (e) {}
+        }
+
+        async function resetEntry(ref) {
+            if (!confirm('Reset?')) return;
+            const b = bookings.find(x => x.ref === ref);
+            if (!b) return;
+            try {
+                await fetch(`${REST_URL}/bookings?booking_reference=eq.${ref}`, {
+                    method: 'PATCH',
+                    headers: H_SERVICE,
+                    body: JSON.stringify({ gate_entered: false, gate_time: null, status: 'paid' })
+                });
+                b.entered = false;
+                b.status = 'paid';
+                refreshAll();
+            } catch (e) {}
+        }
+
+        // ==================== SEND EMAIL VIA EMAILJS ====================
+        async function sendTicketEmail(toEmail, name, ref, ticket, qty, total, phone) {
+            // Validate email
+            if (!toEmail || toEmail === 'N/A' || toEmail === '' || !toEmail.includes('@')) {
+                console.error('Invalid recipient email:', toEmail);
+                return { success: false, error: 'Invalid recipient email: ' + toEmail };
+            }
+
+            try {
+                // Generate QR code URL
+                const qrData = JSON.stringify({ 
+                    ref, 
+                    name, 
+                    ticket, 
+                    phone, 
+                    event: "GUSII NIGHT EXPERIENCE", 
+                    date: "2026-07-18" 
+                });
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}&color=0D5E3A&bgcolor=ffffff&margin=10`;
+                
+                // Email template parameters - Using {{email}} as the recipient placeholder
+                // The template should have {{email}} as the recipient field
+                const templateParams = {
+                    email: toEmail,                      // recipient email - matches {{email}} in template
+                    name: name,                          // recipient name
+                    ticket_ref: ref,                     // booking reference
+                    ticket_type: ticket,                 // ticket type (Regular/VIP)
+                    quantity: qty,                       // number of tickets
+                    total_amount: total,                 // total amount
+                    phone: phone,                        // phone number
+                    qr_code: qrUrl,                      // QR code image URL
+                    event_name: "GUSII NIGHT EXPERIENCE", // event name
+                    event_date: "July 18, 2026",          // event date
+                    venue: "Brimak Hotel, Utawala",       // venue
+                };
+
+                console.log('📧 Sending email with params:', templateParams);
+
+                const response = await emailjs.send(
+                    EMAILJS_SERVICE_ID, 
+                    EMAILJS_TEMPLATE_ID, 
+                    templateParams
+                );
+                
+                console.log('✅ Email sent successfully:', response);
+                return { success: true, response: response };
+                
+            } catch (error) {
+                console.error('❌ Email send error:', error);
+                return { 
+                    success: false, 
+                    error: error.text || error.message || 'Unknown error',
+                    details: error
+                };
+            }
+        }
+
+        // ==================== SHOW TICKET MODAL ====================
+        function showTicketInline(ref, name, ticket, phone, qty, total) {
+            const qrData = JSON.stringify({ ref, name, ticket, phone, event: "GUSII NIGHT EXPERIENCE", date: "2026-07-18" });
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}&color=0D5E3A&bgcolor=ffffff&margin=10`;
+            return `<div class="ticket-display" id="ticketPrint">
+                <div class="ticket-header"><h2>GUSII NIGHT EXPERIENCE</h2><p style="font-size:11px;color:#666">Brimak Hotel, Utawala | July 18, 2026</p></div>
+                <div style="padding:8px">
+                    <div style="background:#FDF6E3;padding:6px;border-radius:6px;margin-bottom:8px">
+                        <span style="font-size:9px;color:#666">REF</span><br>
+                        <span style="font-family:Courier New;font-weight:700;color:#0D5E3A">${ref}</span>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;margin-bottom:8px">
+                        <div><span style="color:#666">Name</span><br><strong>${name}</strong></div>
+                        <div><span style="color:#666">Phone</span><br><strong>${phone}</strong></div>
+                        <div><span style="color:#666">Ticket</span><br><strong style="color:#0D5E3A">${ticket}</strong></div>
+                        <div><span style="color:#666">Qty</span><br><strong>${qty}</strong></div>
+                    </div>
+                    <div style="padding:8px;background:white;display:inline-block;border-radius:8px;border:2px solid #0D5E3A">
+                        <img src="${qrUrl}" width="120" height="120" alt="QR" crossorigin="anonymous">
+                    </div>
+                    <p style="font-weight:700;color:#0D5E3A;margin-top:6px">KSH ${total.toLocaleString()}</p>
+                    <button class="btn-download" onclick="downloadTicket('${ref}')">📥 Download</button>
+                </div>
+            </div>`;
+        }
+
+        window.downloadTicket = async function(ref) {
+            const el = document.getElementById('ticketPrint');
+            if (!el) return;
+            try {
+                const c = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', logging: false });
+                const a = document.createElement('a');
+                a.download = 'GUSII-Ticket-' + ref + '.png';
+                a.href = c.toDataURL('image/png');
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } catch (e) {}
+        };
+
+        async function showTicketModal(ref) {
+            const b = bookings.find(x => x.ref === ref);
+            if (!b) return;
+            const content = document.getElementById('ticketContent');
+            content.innerHTML = showTicketInline(b.ref, b.name, b.ticket, b.phone, b.qty, b.total);
+            
+            // Send email automatically when viewing ticket (if status is paid/entered and email exists)
+            if ((b.status === 'paid' || b.status === 'entered') && b.email && b.email !== 'N/A') {
+                const result = await sendTicketEmail(b.email, b.name, b.ref, b.ticket, b.qty, b.total, b.phone);
+                if (result.success) {
+                    content.innerHTML += `<p style="color:#065f46;font-size:0.8rem;margin-top:0.5rem;">✅ Ticket sent to ${b.email}</p>`;
+                } else {
+                    content.innerHTML += `<p style="color:#991b1b;font-size:0.8rem;margin-top:0.5rem;">❌ Email failed: ${result.error}</p>`;
+                }
+            } else if (b.status === 'paid' || b.status === 'entered') {
+                content.innerHTML += `<p style="color:#92400e;font-size:0.8rem;margin-top:0.5rem;">⚠️ No valid email on file. Ticket not sent.</p>`;
+            }
+            document.getElementById('ticketModal').classList.add('show');
+        }
+
+        // ==================== GATE: SCAN / CAMERA ====================
+        document.getElementById('gateInput').addEventListener('input', function() {
+            const i = this.value.trim();
+            if (i.length < 4) return;
+            setTimeout(() => {
+                const b = bookings.find(x => x.ref.toLowerCase() === i.toLowerCase() || x.phone === i);
+                if (b) processGate(b);
+            }, 300);
+        });
+
+        async function processGate(b) {
+            const r = document.getElementById('gateResult');
+            if (b.entered) {
+                r.className = 'result-box show warn';
+                r.innerHTML = '<h2>⚠️ Already Inside</h2>';
+                return;
+            }
+            if (b.status === 'pending') {
+                r.className = 'result-box show warn';
+                r.innerHTML = '<h2>⚠️ Payment Pending</h2>';
+                return;
+            }
+            try {
+                await fetch(`${REST_URL}/bookings?booking_reference=eq.${b.ref}`, {
+                    method: 'PATCH',
+                    headers: H_SERVICE,
+                    body: JSON.stringify({ gate_entered: true, gate_time: new Date().toISOString(), status: 'entered' })
+                });
+                b.entered = true;
+                b.status = 'entered';
+                r.className = 'result-box show allow';
+                r.innerHTML = '<h2>✅ ENTRY GRANTED</h2><p>' + b.name + '</p>';
+                refreshAll();
+            } catch (e) {}
+        }
+
+        // ==================== ADD BOOKING & SEND EMAIL ====================
+        document.getElementById('saveBookingBtn').addEventListener('click', async function() {
+            const statusDiv = document.getElementById('saveStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status-msg info';
+            statusDiv.textContent = '⏳ Saving booking...';
+            
+            const name = document.getElementById('addName').value.trim();
+            const phone = document.getElementById('addPhone').value.trim();
+            const email = document.getElementById('addEmail').value.trim();
+            const ticket = document.getElementById('addTicket').value;
+            const qty = parseInt(document.getElementById('addQty').value) || 1;
+            const status = document.getElementById('addStatus').value;
+            
+            if (!name || !phone) { 
+                statusDiv.className = 'status-msg error';
+                statusDiv.textContent = '❌ Name & phone required!';
+                return; 
+            }
+            if (!email || !email.includes('@')) {
+                statusDiv.className = 'status-msg error';
+                statusDiv.textContent = '❌ Please enter a valid email for ticket delivery!';
+                return;
+            }
+            
+            const prices = { Regular: 500, VIP: 1000 };
+            const price = prices[ticket] || 500;
+            const total = price * qty;
+            const ref = 'GUS-' + Date.now().toString(36).toUpperCase();
+            
+            try {
+                const res = await fetch(`${REST_URL}/bookings`, {
+                    method: 'POST',
+                    headers: H_SERVICE,
+                    body: JSON.stringify({
+                        booking_reference: ref,
+                        full_name: name,
+                        phone,
+                        email,
+                        ticket_type: ticket,
+                        quantity: qty,
+                        price_per_ticket: price,
+                        total_amount: total,
+                        status,
+                        gate_entered: false,
+                        payment_method: 'admin',
+                        payment_status: status === 'paid' ? 'completed' : 'pending'
+                    })
+                });
+                
+                if (!res.ok) {
+                    const err = await res.text();
+                    throw new Error('DB error: ' + err);
+                }
+                
+                statusDiv.className = 'status-msg success';
+                statusDiv.textContent = '✅ Booking saved! Ref: ' + ref;
+
+                // SEND EMAIL if status is paid
+                if (status === 'paid') {
+                    statusDiv.className = 'status-msg info';
+                    statusDiv.textContent = '📧 Sending ticket to ' + email + '...';
+                    
+                    const result = await sendTicketEmail(email, name, ref, ticket, qty, total, phone);
+                    
+                    if (result.success) {
+                        statusDiv.className = 'status-msg success';
+                        statusDiv.textContent = '✅ Booking saved & ticket sent to ' + email + '! Ref: ' + ref;
+                    } else {
+                        statusDiv.className = 'status-msg error';
+                        statusDiv.textContent = '⚠️ Booking saved but email failed: ' + result.error;
+                        console.error('Email error details:', result.details);
+                    }
+                } else {
+                    statusDiv.className = 'status-msg info';
+                    statusDiv.textContent = '✅ Booking saved as pending. Ref: ' + ref;
+                }
+
+                // Clear fields
+                document.getElementById('addName').value = '';
+                document.getElementById('addPhone').value = '';
+                document.getElementById('addEmail').value = '';
+                await loadAll();
+                
+            } catch (e) {
+                statusDiv.className = 'status-msg error';
+                statusDiv.textContent = '❌ Error: ' + e.message;
+                console.error('Save error:', e);
+            }
+        });
+
+        // ==================== EXPORT ====================
+        document.getElementById('exportCSVBtn').addEventListener('click', () => {
+            if (!bookings.length) return;
+            const csv = 'Ref,Name,Phone,Email,Ticket,Qty,Total,Status\n' + bookings.map(b =>
+                `"${b.ref}","${b.name}","${b.phone}","${b.email}","${b.ticket}",${b.qty},${b.total},"${b.status}"`
+            ).join('\n');
+            downloadBlob(csv, 'bookings.csv');
+        });
+        document.getElementById('exportJSONBtn').addEventListener('click', () => {
+            downloadBlob(JSON.stringify({ bookings, artists }, null, 2), 'data.json');
+        });
+
+        function downloadBlob(c, f) {
+            const b = new Blob([c], { type: 'text/plain' }),
+                a = document.createElement('a');
+            a.href = URL.createObjectURL(b);
+            a.download = f;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // ==================== TABS ====================
+        document.querySelectorAll('.tabs button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('on'));
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                this.classList.add('on');
+                document.getElementById('panel-' + this.getAttribute('data-tab')).classList.add('active');
+            });
+        });
+        document.getElementById('searchInput').addEventListener('input', renderBookings);
+        document.getElementById('statusFilter').addEventListener('change', renderBookings);
+
+        // ==================== GATE CAMERA (basic) ====================
+        let camActive = false;
+        document.getElementById('gateCameraBtn').addEventListener('click', async function() {
+            const container = document.getElementById('gateCamContainer');
+            if (camActive) {
+                if (gateStream) { gateStream.getTracks().forEach(t => t.stop());
+                    gateStream = null; }
+                container.style.display = 'none';
+                camActive = false;
+                this.textContent = '📷 Camera';
+                return;
+            }
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                gateStream = stream;
+                document.getElementById('gateVideo').srcObject = stream;
+                container.style.display = 'block';
+                camActive = true;
+                this.textContent = '⏹ Stop';
+                const video = document.getElementById('gateVideo');
+                const canvas = document.getElementById('gateCanvas');
+                const ctx = canvas.getContext('2d');
+                const scanInterval = setInterval(() => {
+                    if (!camActive) { clearInterval(scanInterval); return; }
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    ctx.drawImage(video, 0, 0);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+                    if (code && code.data) {
+                        const ref = code.data.trim();
+                        const b = bookings.find(x => x.ref.toLowerCase() === ref.toLowerCase());
+                        if (b) {
+                            processGate(b);
+                        }
+                    }
+                }, 2000);
+                window._scanInterval = scanInterval;
+            } catch (e) { alert('Camera access denied'); }
+        });
+
+        // ==================== INIT ====================
+        console.log('🎵 Admin Ready | Password: gusii2026');
+        console.log('📧 EmailJS Config:');
+        console.log('  Public Key:', EMAILJS_PUBLIC_KEY);
+        console.log('  Service ID:', EMAILJS_SERVICE_ID);
+        console.log('  Template ID:', EMAILJS_TEMPLATE_ID);
+        console.log('  Using {{email}} as recipient placeholder');
+    </script>
+</body>
+</html>
